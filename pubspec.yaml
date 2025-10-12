@@ -38,6 +38,8 @@ dependencies:
   shared_preferences: ^2.5.3
   webview_flutter: ^4.4.2
   url_launcher: ^6.2.1
+  image_picker: ^1.0.7
+  flutter_local_notifications: ^17.0.0
 
 dev_dependencies:
   flutter_test:

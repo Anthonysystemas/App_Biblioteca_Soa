@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import '../widgets/bottom_nav.dart';
 import '../widgets/book_card.dart';
-import '../services/books_api_service.dart';
+import '../services/open_library_api_service.dart';
+import '../models/book_model.dart';
 
 class SearchScreen extends StatefulWidget {
   final int currentNavIndex;
@@ -114,14 +115,14 @@ class _SearchScreenState extends State<SearchScreen> {
     });
 
     try {
-      print('Buscando: "$query"');
+      debugPrint('Buscando: "$query"');
       
-      final results = await BooksApiService.searchBooks(
+      final results = await OpenLibraryApiService.searchBooks(
         query: query,
         maxResults: 40,
       );
 
-      print('Resultados encontrados: ${results.length}');
+      debugPrint('Resultados encontrados: ${results.length}');
 
       if (mounted) {
         setState(() {
@@ -132,7 +133,7 @@ class _SearchScreenState extends State<SearchScreen> {
         _saveRecentSearch(query);
       }
     } catch (e) {
-      print('Error en búsqueda: $e');
+      debugPrint('Error en búsqueda: $e');
       
       if (mounted) {
         setState(() {
@@ -197,7 +198,7 @@ class _SearchScreenState extends State<SearchScreen> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -219,8 +220,8 @@ class _SearchScreenState extends State<SearchScreen> {
                 borderRadius: BorderRadius.circular(25),
                 border: Border.all(
                   color: _isLoading 
-                      ? const Color(0xFF667EEA).withOpacity(0.5)
-                      : Colors.grey.withOpacity(0.3),
+                      ? const Color(0xFF667EEA).withAlpha(128)
+                      : Colors.grey.withAlpha(77),
                   width: 1,
                 ),
               ),
@@ -371,7 +372,7 @@ class _SearchScreenState extends State<SearchScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF667EEA).withOpacity(0.1),
+                  color: const Color(0xFF667EEA).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Text(
@@ -574,11 +575,11 @@ class _SearchScreenState extends State<SearchScreen> {
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: Colors.grey.withOpacity(0.3),
+                        color: Colors.grey.withValues(alpha: 0.3),
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
+                          color: Colors.black.withValues(alpha: 0.05),
                           blurRadius: 4,
                           offset: const Offset(0, 2),
                         ),
@@ -631,14 +632,14 @@ class _SearchScreenState extends State<SearchScreen> {
                     vertical: 10,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF667EEA).withOpacity(0.1),
+                    color: const Color(0xFF667EEA).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: const Color(0xFF667EEA).withOpacity(0.3),
+                      color: const Color(0xFF667EEA).withValues(alpha: 0.3),
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF667EEA).withOpacity(0.1),
+                        color: const Color(0xFF667EEA).withValues(alpha: 0.1),
                         blurRadius: 4,
                         offset: const Offset(0, 2),
                       ),

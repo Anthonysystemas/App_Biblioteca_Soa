@@ -38,16 +38,16 @@ class CircleItem extends StatelessWidget {
                 shape: BoxShape.circle,
                 gradient: LinearGradient(
                   colors: [
-                    color.withOpacity(0.1),
-                    color.withOpacity(0.05),
+                    color.withValues(alpha: 0.1),
+                    color.withValues(alpha: 0.05),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                border: Border.all(color: color.withOpacity(0.2), width: 1.5),
+                border: Border.all(color: color.withValues(alpha: 0.2), width: 1.5),
                 boxShadow: [
                   BoxShadow(
-                    color: color.withOpacity(0.1),
+                    color: color.withValues(alpha: 0.1),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -60,14 +60,14 @@ class CircleItem extends StatelessWidget {
                   gradient: LinearGradient(
                     colors: [
                       color,
-                      color.withOpacity(0.8),
+                      color.withValues(alpha: 0.8),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: color.withOpacity(0.3),
+                      color: color.withValues(alpha: 0.3),
                       blurRadius: 4,
                       offset: const Offset(0, 2),
                     ),

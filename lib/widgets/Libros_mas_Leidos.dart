@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../services/books_api_service.dart';
+import '../services/open_library_api_service.dart';
+import '../models/book_model.dart';
 import 'book_card.dart';
 
 class LibrosMasLeidosSection extends StatefulWidget {
@@ -40,13 +41,13 @@ class _LibrosMasLeidosSectionState extends State<LibrosMasLeidosSection> {
       
       for (String category in categories) {
         try {
-          final categoryBooks = await BooksApiService.getBooksByCategory(
+          final categoryBooks = await OpenLibraryApiService.getBooksByCategory(
             category: category,
             maxResults: 4,
           );
           allBooks.addAll(categoryBooks);
         } catch (e) {
-          print('Error cargando categoría $category: $e');
+          debugPrint('Error cargando categoría $category: $e');
         }
       }
 
@@ -331,7 +332,7 @@ class _LibrosMasLeidosSectionState extends State<LibrosMasLeidosSection> {
                     borderRadius: BorderRadius.circular(8),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
+                        color: Colors.black.withValues(alpha: 0.2),
                         blurRadius: 8,
                         offset: const Offset(0, 4),
                       ),

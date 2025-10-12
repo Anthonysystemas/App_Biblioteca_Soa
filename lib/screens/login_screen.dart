@@ -1,11 +1,13 @@
 // screens/login_screen.dart
 import 'package:flutter/material.dart';
-import '../widgets/background_painters.dart'; // Importar los painters
+import '../models/user.dart';
+import '../services/user_service.dart';
 import 'register_screen.dart';
+import 'forgot_password_screen.dart';
 import 'home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+  const LoginScreen({super.key});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -37,6 +39,15 @@ class _LoginScreenState extends State<LoginScreen> {
     // Simular un pequeño delay
     await Future.delayed(const Duration(milliseconds: 500));
 
+    // Crear usuario y guardar en local
+    final user = User(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      name: _usernameController.text.trim(),
+      email: '${_usernameController.text.trim()}@biblioteca.com',
+    );
+    
+    await UserService.saveUser(user);
+
     // Login simple - cualquier usuario y contraseña permite acceso
     if (mounted) {
       Navigator.pushReplacement(
@@ -62,9 +73,18 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
-      body: CustomPaint(
-        painter: LoginBackgroundPainter(), // Usar el painter
+      backgroundColor: const Color(0xFFF7F8FC),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              const Color(0xFF667EEA).withValues(alpha: 0.1),
+              const Color(0xFFF7F8FC),
+            ],
+          ),
+        ),
         child: SafeArea(
           child: SingleChildScrollView(
             child: SizedBox(
@@ -129,7 +149,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           controller: _usernameController,
                           enabled: !_isLoading,
                           decoration: InputDecoration(
-                            labelText: 'Username', // Cambio: tu API usa username
+                            labelText: 'Usuario',
                             prefixIcon: const Icon(Icons.person_outline),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
@@ -138,7 +158,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             filled: true,
                             errorText: _errorMessage != null && 
                                       _usernameController.text.isEmpty 
-                                      ? 'Username requerido' : null,
+                                      ? 'Usuario requerido' : null,
                           ),
                           onChanged: (value) {
                             // Limpiar error cuando el usuario empiece a escribir
@@ -157,7 +177,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           enabled: !_isLoading,
                           obscureText: true,
                           decoration: InputDecoration(
-                            labelText: 'Password',
+                            labelText: 'Contraseña',
                             prefixIcon: const Icon(Icons.lock_outline),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
@@ -166,7 +186,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             filled: true,
                             errorText: _errorMessage != null && 
                                       _passwordController.text.isEmpty 
-                                      ? 'Password requerido' : null,
+                                      ? 'Contraseña requerida' : null,
                           ),
                           onChanged: (value) {
                             // Limpiar error cuando el usuario empiece a escribir
@@ -208,7 +228,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ),
                                   )
                                 : const Text(
-                                    'Login',
+                                    'Iniciar Sesión',
                                     style: TextStyle(
                                       color: Colors.white,
                                       fontSize: 16,
@@ -217,7 +237,32 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                           ),
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 16),
+
+                        // Botón Olvidé mi contraseña
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: TextButton(
+                            onPressed: _isLoading ? null : () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const ForgotPasswordScreen(),
+                                ),
+                              );
+                            },
+                            child: const Text(
+                              '¿Olvidaste tu contraseña?',
+                              style: TextStyle(
+                                color: Color(0xFF667EEA),
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 8),
 
                         // Botón Register
                         TextButton(
@@ -236,9 +281,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                 color: _isLoading ? Colors.grey : Colors.black54
                               ),
                               children: [
-                                const TextSpan(text: "Don't have an account? "),
+                                const TextSpan(text: "¿No tienes cuenta? "),
                                 TextSpan(
-                                  text: "Register",
+                                  text: "Regístrate",
                                   style: TextStyle(
                                     color: _isLoading ? Colors.grey : const Color(0xFF4299E1),
                                     fontWeight: FontWeight.bold,

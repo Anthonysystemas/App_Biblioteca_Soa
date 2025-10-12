@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import '../widgets/background_painters.dart';
+import '../services/user_service.dart';
+import '../models/user.dart';
 import 'home_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({Key? key}) : super(key: key);
+  const RegisterScreen({super.key});
 
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
@@ -41,12 +43,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                   ),
 
-                  // Título "Create Account"
+                  // Título "Crear Cuenta"
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 40),
                     alignment: Alignment.centerLeft,
                     child: const Text(
-                      'Create\nAccount',
+                      'Crear\nCuenta',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 36,
@@ -63,11 +65,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     margin: const EdgeInsets.symmetric(horizontal: 30),
                     padding: const EdgeInsets.all(30),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.95),
+                      color: Colors.white.withValues(alpha: 0.95),
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: Colors.black.withValues(alpha: 0.1),
                           blurRadius: 20,
                           offset: const Offset(0, 10),
                         ),
@@ -76,9 +78,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Label Name
+                        // Label Nombre
                         const Text(
-                          'Name',
+                          'Nombre Completo',
                           style: TextStyle(
                             color: Colors.grey,
                             fontSize: 14,
@@ -110,9 +112,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                         const SizedBox(height: 16),
 
-                        // Label Email
+                        // Label Correo
                         const Text(
-                          'Email',
+                          'Correo Electrónico',
                           style: TextStyle(
                             color: Colors.grey,
                             fontSize: 14,
@@ -144,9 +146,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                         const SizedBox(height: 16),
 
-                        // Label Password
+                        // Label Contraseña
                         const Text(
-                          'Password',
+                          'Contraseña',
                           style: TextStyle(
                             color: Colors.grey,
                             fontSize: 14,
@@ -184,10 +186,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           width: double.infinity,
                           height: 56,
                           child: ElevatedButton(
-                            onPressed: () {
+                            onPressed: () async {
+                              // Guardar usuario
+                              final user = User(
+                                id: DateTime.now().millisecondsSinceEpoch.toString(),
+                                name: _nameController.text.trim(),
+                                email: _emailController.text.trim(),
+                              );
+                              
+                              final navigator = Navigator.of(context);
+                              
+                              await UserService.saveUser(user);
+                              
                               // Navegar al HomeScreen después del registro
-                              Navigator.pushReplacement(
-                                context,
+                              if (!mounted) return;
+                              navigator.pushReplacement(
                                 MaterialPageRoute(
                                   builder: (context) => const HomeScreen(),
                                 ),
@@ -201,7 +214,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               elevation: 0,
                             ),
                             child: const Text(
-                              'Sign up',
+                              'Registrarse',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 16,
@@ -220,7 +233,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               Navigator.pop(context);
                             },
                             child: const Text(
-                              'Sign in',
+                              'Ya tengo cuenta',
                               style: TextStyle(
                                 color: Colors.black87,
                                 fontSize: 16,

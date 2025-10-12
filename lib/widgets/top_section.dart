@@ -1,23 +1,92 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
+import '../services/user_service.dart';
+import '../services/recently_viewed_service.dart';
+import '../models/user.dart';
+import '../models/book_model.dart';
+import '../screens/book_reader_screen.dart';
 
-class TopSection extends StatelessWidget {
+class TopSection extends StatefulWidget {
   const TopSection({super.key});
 
   @override
+  State<TopSection> createState() => _TopSectionState();
+}
+
+class _TopSectionState extends State<TopSection> {
+  User? _currentUser;
+  BookModel? _lastViewedBook;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUser();
+    _loadLastBook();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Recargar usuario cuando se regrese a esta pantalla
+    _loadUser();
+  }
+
+  Future<void> _loadUser() async {
+    final user = await UserService.getUser();
+    if (mounted) {
+      setState(() {
+        _currentUser = user;
+      });
+    }
+  }
+
+  Future<void> _loadLastBook() async {
+    final lastBook = await RecentlyViewedService.getLastViewedBook();
+    if (mounted) {
+      setState(() {
+        _lastViewedBook = lastBook;
+      });
+    }
+  }
+
+  Future<void> _pickProfileImage() async {
+    // TODO: Implementar selección de imagen
+    // Por ahora solo muestra un diálogo
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Cambiar foto de perfil'),
+        content: const Text('Funcionalidad de selección de imagen próximamente.\n\nPor ahora puedes personalizar tu perfil con tu nombre.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Entendido'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final userName = _currentUser?.name ?? 'Usuario';
+    final userImage = _currentUser?.profileImage;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Fila: Saludo a la izquierda y Avatar a la derecha
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Expanded( // Agregado Expanded para evitar overflow
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    '¡Hola Usuario!',
-                    style: TextStyle(
+                  Text(
+                    '¡Hola $userName!',
+                    style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF1A202C),
@@ -30,29 +99,68 @@ class TopSection extends StatelessWidget {
                       fontSize: 14,
                       color: Colors.grey[600],
                     ),
-                    maxLines: 2, // Limitar líneas
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
             ),
-            const SizedBox(width: 12), // Espacio entre texto y avatar
-            CircleAvatar(
-              radius: 25,
-              backgroundColor: Colors.blue.withOpacity(0.1),
-              child: const Icon(
-                Icons.person,
-                color: Colors.blue,
-                size: 30,
+            const SizedBox(width: 16),
+            // Avatar con foto de perfil o inicial
+            GestureDetector(
+              onTap: _pickProfileImage,
+              child: Stack(
+                children: [
+                  CircleAvatar(
+                    radius: 28,
+                    backgroundColor: Colors.blue.withValues(alpha: 0.1),
+                    backgroundImage: userImage != null && userImage.isNotEmpty
+                        ? (userImage.startsWith('http')
+                            ? NetworkImage(userImage) as ImageProvider
+                            : FileImage(File(userImage)))
+                        : null,
+                    child: userImage == null || userImage.isEmpty
+                        ? Text(
+                            userName.isNotEmpty ? userName[0].toUpperCase() : 'U',
+                            style: const TextStyle(
+                              color: Colors.blue,
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          )
+                        : null,
+                  ),
+                  // Indicador de edición
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF667EEA),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2),
+                      ),
+                      child: const Icon(
+                        Icons.camera_alt,
+                        color: Colors.white,
+                        size: 10,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
         ),
         const SizedBox(height: 20),
-        // TARJETA DEL LIBRO DESTACADO - CORRECCIÓN PRINCIPAL
+        // TARJETA DEL LIBRO DESTACADO - CORRECCIÓN COMPLETA
         Container(
           width: double.infinity,
-          height: 150,
+          constraints: const BoxConstraints(
+            minHeight: 140,
+            maxHeight: 160,
+          ),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
             gradient: const LinearGradient(
@@ -65,75 +173,81 @@ class TopSection extends StatelessWidget {
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.15),
+                color: Colors.black.withValues(alpha: 0.15),
                 blurRadius: 12,
                 offset: const Offset(0, 4),
               ),
             ],
           ),
           child: Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(16),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // SECCIÓN DE TEXTO - CORRECCIÓN AQUÍ
+                // SECCIÓN DE TEXTO - OPTIMIZADA
                 Expanded(
-                  flex: 3, // Proporción para el texto
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min, // Importante: tamaño mínimo
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Etiqueta "Libro destacado"
-                      const Text(
-                        'Libro destacado',
-                        style: TextStyle(
+                      // Etiqueta
+                      Text(
+                        _lastViewedBook != null ? 'Continuar leyendo' : 'Libro destacado',
+                        style: const TextStyle(
                           color: Colors.white70,
-                          fontSize: 12, // Reducido de 14 a 12
+                          fontSize: 11,
                           fontWeight: FontWeight.w500,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 6), // Reducido de 8 a 6
+                      const SizedBox(height: 4),
                       // Título del libro
-                      Flexible( // Cambio de Text a Flexible
-                        child: Text(
-                          'El arte de programar',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 18, // Reducido de 20 a 18
-                            fontWeight: FontWeight.bold,
-                          ),
-                          maxLines: 2, // Máximo 2 líneas
-                          overflow: TextOverflow.ellipsis,
+                      Text(
+                        _lastViewedBook?.title ?? 'Explora nuestra colección',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          height: 1.2,
                         ),
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 10), // Reducido de 12 a 10
-                      // Botón "Leer ahora"
-                      SizedBox( // Envolver en SizedBox para controlar tamaño
-                        height: 32, // Altura fija para el botón
-                        child: ElevatedButton(
-                          onPressed: () {},
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: const Color(0xFF667EEA),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16), // Reducido de 20 a 16
-                            ),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16, // Reducido de 20 a 16
-                              vertical: 6, // Reducido de 8 a 6
-                            ),
-                            elevation: 0,
-                            minimumSize: Size.zero, // Remover tamaño mínimo
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      const SizedBox(height: 12),
+                      // Botón
+                      ElevatedButton(
+                        onPressed: _lastViewedBook != null
+                            ? () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => BookReaderScreen(
+                                      book: _lastViewedBook!,
+                                    ),
+                                  ),
+                                );
+                              }
+                            : null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: const Color(0xFF667EEA),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
                           ),
-                          child: const Text(
-                            'Leer ahora',
-                            style: TextStyle(
-                              fontSize: 11, // Reducido de 12 a 11
-                              fontWeight: FontWeight.w600,
-                            ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 8,
+                          ),
+                          elevation: 0,
+                          minimumSize: const Size(100, 36),
+                        ),
+                        child: Text(
+                          _lastViewedBook != null ? 'Leer ahora' : 'Explorar',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
@@ -141,25 +255,18 @@ class TopSection extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 16),
-                // ICONO DEL LIBRO
-                Flexible( // Cambio de Container fijo a Flexible
-                  flex: 1, // Proporción para el icono
-                  child: Container(
-                    constraints: const BoxConstraints(
-                      maxWidth: 80,
-                      maxHeight: 100,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Center( // Centrar el icono
-                      child: Icon(
-                        Icons.book,
-                        color: Colors.white,
-                        size: 36, // Reducido de 40 a 36
-                      ),
-                    ),
+                // ICONO DEL LIBRO - OPTIMIZADO
+                Container(
+                  width: 70,
+                  height: 90,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.book,
+                    color: Colors.white,
+                    size: 32,
                   ),
                 ),
               ],

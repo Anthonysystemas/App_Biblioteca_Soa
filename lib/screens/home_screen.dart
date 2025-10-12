@@ -4,9 +4,10 @@ import '../widgets/top_section.dart';
 import '../widgets/categories_section.dart';
 import '../widgets/libros_mas_leidos.dart';
 import '../widgets/bottom_nav.dart';
+import '../widgets/notification_badge.dart';
 import 'search_screen.dart';
-import 'Favorites_screen.dart';
-import 'biblioteca_screen.dart';
+import 'mis_libros_screen.dart';
+import 'profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -44,10 +45,10 @@ class _HomeScreenState extends State<HomeScreen> {
         });
         break;
       case 2:
-        // Mi Biblioteca - navegar a la pantalla de biblioteca
+        // Mis Libros (Préstamos, Reservas, Historial)
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (context) => BibliotecaScreen(
+            builder: (context) => MisLibrosScreen(
               currentNavIndex: index,
               onNavTap: _onBottomNavTap,
             ),
@@ -59,28 +60,16 @@ class _HomeScreenState extends State<HomeScreen> {
         });
         break;
       case 3:
-        // Favoritos
+        // Perfil
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (context) => FavoritesScreen(
-              currentNavIndex: index,
-              onNavTap: _onBottomNavTap,
-            ),
+            builder: (context) => const ProfileScreen(),
           ),
         ).then((_) {
           setState(() {
             _selectedIndex = 0;
           });
         });
-        break;
-      case 4:
-        // Perfil - implementar después
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Perfil - Próximamente'),
-            duration: Duration(seconds: 1),
-          ),
-        );
         break;
     }
   }
@@ -116,12 +105,20 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Barra de búsqueda clickeable
-                GestureDetector(
-                  onTap: _onSearchBarTap,
-                  child: AbsorbPointer(
-                    child: const AppSearchBar(),
-                  ),
+                // Fila: Barra de búsqueda + Notificación
+                Row(
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: _onSearchBarTap,
+                        child: const AbsorbPointer(
+                          child: AppSearchBar(),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    const NotificationBadge(),
+                  ],
                 ),
                 SizedBox(height: verticalSpacing * 1.5),
                 
@@ -130,7 +127,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 SizedBox(height: verticalSpacing * 2),
                 
                 // Sección de categorías con íconos circulares
-                const CategoriesSection(),
+                CategoriesSection(
+                  currentNavIndex: _selectedIndex,
+                  onNavTap: _onBottomNavTap,
+                ),
                 SizedBox(height: verticalSpacing * 2),
                 
                 // Sección de libros más leídos con API (con íconos de favorito)

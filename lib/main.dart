@@ -1,7 +1,17 @@
 import 'package:flutter/material.dart';
 import 'screens/splash_screen.dart';
+import 'services/notification_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Inicializar notificaciones (puede fallar en Windows, es opcional)
+  try {
+    await NotificationService().initialize();
+  } catch (e) {
+    debugPrint('Notificaciones no disponibles en esta plataforma: $e');
+  }
+  
   runApp(const BibliotecaApp());
 }
 

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+// Data-only model. No Flutter UI dependencies.
 
 class BookModel {
   final String id;
@@ -18,7 +18,7 @@ class BookModel {
   final String? infoLink;
   
   // PROPIEDAD MUTABLE para biblioteca - CORREGIDA
-  String _readingStatus;
+  String readingStatus;
 
   BookModel({
     required this.id,
@@ -37,11 +37,9 @@ class BookModel {
     this.previewLink,
     this.infoLink,
     String? readingStatus,
-  }) : _readingStatus = readingStatus ?? 'pendiente';
+  }) : readingStatus = readingStatus ?? 'pendiente';
 
   // GETTER Y SETTER para readingStatus
-  String get readingStatus => _readingStatus;
-  set readingStatus(String value) => _readingStatus = value;
 
   factory BookModel.fromJson(Map<String, dynamic> json) {
     final volumeInfo = json['volumeInfo'] ?? {};
@@ -90,57 +88,20 @@ class BookModel {
         'infoLink': infoLink,
         'imageLinks': thumbnail != null ? {'thumbnail': thumbnail} : null,
       },
-      'readingStatus': _readingStatus,
+      'readingStatus': readingStatus,
     };
   }
 
   // Compatibilidad con código existente
   String? get author => authors.isNotEmpty ? authors.first : null;
 
-  // Métodos helper para estados
-  Color getStatusColor() {
-    switch (_readingStatus) {
-      case 'leyendo':
-        return const Color(0xFF10B981);
-      case 'completado':
-        return const Color(0xFF059669);
-      case 'pendiente':
-      default:
-        return const Color(0xFFF59E0B);
-    }
-  }
-
-  String getStatusText() {
-    switch (_readingStatus) {
-      case 'leyendo':
-        return 'Leyendo';
-      case 'completado':
-        return 'Completado';
-      case 'pendiente':
-      default:
-        return 'Pendiente';
-    }
-  }
-
-  IconData getStatusIcon() {
-    switch (_readingStatus) {
-      case 'leyendo':
-        return Icons.play_circle;
-      case 'completado':
-        return Icons.check_circle;
-      case 'pendiente':
-      default:
-        return Icons.schedule;
-    }
-  }
-
   void updateReadingStatus(String newStatus) {
-    _readingStatus = newStatus;
+    readingStatus = newStatus;
   }
 
-  bool get isPending => _readingStatus == 'pendiente';
-  bool get isReading => _readingStatus == 'leyendo';
-  bool get isCompleted => _readingStatus == 'completado';
+  bool get isPending => readingStatus == 'pendiente';
+  bool get isReading => readingStatus == 'leyendo';
+  bool get isCompleted => readingStatus == 'completado';
 
   BookModel copyWith({
     String? id,
@@ -176,13 +137,13 @@ class BookModel {
       language: language ?? this.language,
       previewLink: previewLink ?? this.previewLink,
       infoLink: infoLink ?? this.infoLink,
-      readingStatus: readingStatus ?? this._readingStatus,
+      readingStatus: readingStatus ?? this.readingStatus,
     );
   }
 
   @override
   String toString() {
-    return 'BookModel(id: $id, title: $title, authors: $authorsString, status: $_readingStatus)';
+    return 'BookModel(id: $id, title: $title, authors: $authorsString, status: $readingStatus)';
   }
 
   @override

@@ -1,6 +1,7 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'books_api_service.dart';
+import '../models/book_model.dart';
 
 class FavoritesService {
   static const String _favoritesKey = 'favorite_books';
@@ -16,7 +17,7 @@ class FavoritesService {
         return BookModel.fromJson({'id': bookData['id'], 'volumeInfo': bookData});
       }).toList();
     } catch (e) {
-      print('Error al cargar favoritos: $e');
+      debugPrint('Error al cargar favoritos: $e');
       return [];
     }
   }
@@ -57,7 +58,7 @@ class FavoritesService {
       await prefs.setStringList(_favoritesKey, favoritesJson);
       return true;
     } catch (e) {
-      print('Error al agregar a favoritos: $e');
+      debugPrint('Error al agregar a favoritos: $e');
       return false;
     }
   }
@@ -76,7 +77,7 @@ class FavoritesService {
       await prefs.setStringList(_favoritesKey, favoritesJson);
       return true;
     } catch (e) {
-      print('Error al eliminar de favoritos: $e');
+      debugPrint('Error al eliminar de favoritos: $e');
       return false;
     }
   }
@@ -92,7 +93,7 @@ class FavoritesService {
         return bookData['id'] == bookId;
       });
     } catch (e) {
-      print('Error al verificar favoritos: $e');
+      debugPrint('Error al verificar favoritos: $e');
       return false;
     }
   }
@@ -110,7 +111,7 @@ class FavoritesService {
         return true; // Agregado a favoritos
       }
     } catch (e) {
-      print('Error al alternar favorito: $e');
+      debugPrint('Error al alternar favorito: $e');
       return false;
     }
   }
@@ -122,7 +123,7 @@ class FavoritesService {
       final favoritesJson = prefs.getStringList(_favoritesKey) ?? [];
       return favoritesJson.length;
     } catch (e) {
-      print('Error al obtener cantidad de favoritos: $e');
+      debugPrint('Error al obtener cantidad de favoritos: $e');
       return 0;
     }
   }
@@ -134,7 +135,7 @@ class FavoritesService {
       await prefs.remove(_favoritesKey);
       return true;
     } catch (e) {
-      print('Error al limpiar favoritos: $e');
+      debugPrint('Error al limpiar favoritos: $e');
       return false;
     }
   }

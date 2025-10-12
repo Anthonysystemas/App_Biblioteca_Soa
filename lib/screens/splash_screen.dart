@@ -172,8 +172,8 @@ class _SplashScreenState extends State<SplashScreen>
                 end: Alignment.bottomCenter,
                 colors: [
                   _backgroundColorAnimation.value ?? const Color(0xFF667EEA),
-                  _backgroundColorAnimation.value?.withOpacity(0.8) ?? 
-                      const Color(0xFF764BA2).withOpacity(0.8),
+                  _backgroundColorAnimation.value?.withAlpha(204) ?? 
+                      const Color(0xFF764BA2).withAlpha(204),
                 ],
               ),
             ),
@@ -181,7 +181,7 @@ class _SplashScreenState extends State<SplashScreen>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Spacer(flex: 2),
+                  const Spacer(flex: 1),
                   
                   // Logo/Ícono principal con animaciones
                   AnimatedBuilder(
@@ -195,11 +195,11 @@ class _SplashScreenState extends State<SplashScreen>
                             width: screenWidth * 0.3,
                             height: screenWidth * 0.3,
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.9),
+                              color: Colors.white.withValues(alpha: 0.9),
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.3),
+                                  color: Colors.black.withValues(alpha: 0.3),
                                   blurRadius: 20,
                                   offset: const Offset(0, 10),
                                 ),
@@ -241,7 +241,7 @@ class _SplashScreenState extends State<SplashScreen>
                               Text(
                                 'Tu biblioteca digital',
                                 style: TextStyle(
-                                  color: Colors.white.withOpacity(0.9),
+                                  color: Colors.white.withValues(alpha: 0.9),
                                   fontSize: screenWidth * 0.045,
                                   fontWeight: FontWeight.w300,
                                   letterSpacing: 1,
@@ -254,7 +254,7 @@ class _SplashScreenState extends State<SplashScreen>
                     },
                   ),
 
-                  const Spacer(flex: 2),
+                  const Spacer(flex: 1),
 
                   // Indicador de carga con animación
                   AnimatedBuilder(
@@ -269,7 +269,7 @@ class _SplashScreenState extends State<SplashScreen>
                               height: 30,
                               child: CircularProgressIndicator(
                                 valueColor: AlwaysStoppedAnimation<Color>(
-                                  Colors.white.withOpacity(0.8),
+                                  Colors.white.withValues(alpha: 0.8),
                                 ),
                                 strokeWidth: 3,
                               ),
@@ -278,7 +278,7 @@ class _SplashScreenState extends State<SplashScreen>
                             Text(
                               'Cargando tu biblioteca...',
                               style: TextStyle(
-                                color: Colors.white.withOpacity(0.8),
+                                color: Colors.white.withValues(alpha: 0.8),
                                 fontSize: screenWidth * 0.035,
                                 fontWeight: FontWeight.w400,
                               ),

@@ -1,4 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Permiso requerido para acceder a Internet desde la app instalada (fetch/http requests) -->
+    <uses-permission android:name="android.permission.INTERNET" />
     <application
         android:label="app_biblioteca"
         android:name="${applicationName}"

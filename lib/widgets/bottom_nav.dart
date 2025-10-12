@@ -47,12 +47,7 @@ class BottomNav extends StatelessWidget {
           BottomNavigationBarItem(
             icon: Icon(Icons.library_books_outlined),
             activeIcon: Icon(Icons.library_books),
-            label: 'Mi Biblioteca',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.favorite_outline),
-            activeIcon: Icon(Icons.favorite),
-            label: 'Favoritos',
+            label: 'Mis Libros',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),

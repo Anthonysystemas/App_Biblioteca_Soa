@@ -1,6 +1,7 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'books_api_service.dart';
+import '../models/book_model.dart';
 
 class BibliotecaService {
   static const String _bibliotecaKey = 'user_biblioteca';
@@ -31,14 +32,14 @@ class BibliotecaService {
         final book = BookModel.fromJson(bookJson);
         books.add(book);
       } catch (e) {
-        print('Error al cargar libro de biblioteca: $e');
+        debugPrint('Error al cargar libro de biblioteca: $e');
         continue;
       }
     }
     
     return books;
   } catch (e) {
-    print('Error al obtener biblioteca: $e');
+    debugPrint('Error al obtener biblioteca: $e');
     return [];
   }
 }
@@ -49,7 +50,7 @@ class BibliotecaService {
       final books = await getBibliotecaBooks();
       return books.any((book) => book.id == bookId);
     } catch (e) {
-      print('Error al verificar libro en biblioteca: $e');
+      debugPrint('Error al verificar libro en biblioteca: $e');
       return false;
     }
   }
@@ -79,7 +80,7 @@ class BibliotecaService {
       
       return true;
     } catch (e) {
-      print('Error al agregar a biblioteca: $e');
+      debugPrint('Error al agregar a biblioteca: $e');
       return false;
     }
   }
@@ -109,7 +110,7 @@ class BibliotecaService {
       
       return true;
     } catch (e) {
-      print('Error al eliminar de biblioteca: $e');
+      debugPrint('Error al eliminar de biblioteca: $e');
       return false;
     }
   }
@@ -143,7 +144,7 @@ class BibliotecaService {
       await prefs.setString(_readingStatusKey, json.encode(statusMap));
       return true;
     } catch (e) {
-      print('Error al actualizar estado de lectura: $e');
+      debugPrint('Error al actualizar estado de lectura: $e');
       return false;
     }
   }
@@ -159,7 +160,7 @@ class BibliotecaService {
       final Map<String, dynamic> statusMap = json.decode(statusJson);
       return statusMap[bookId] ?? 'pendiente';
     } catch (e) {
-      print('Error al obtener estado de lectura: $e');
+      debugPrint('Error al obtener estado de lectura: $e');
       return 'pendiente';
     }
   }
@@ -172,7 +173,7 @@ class BibliotecaService {
       await prefs.remove(_readingStatusKey);
       return true;
     } catch (e) {
-      print('Error al limpiar biblioteca: $e');
+      debugPrint('Error al limpiar biblioteca: $e');
       return false;
     }
   }
@@ -189,7 +190,7 @@ class BibliotecaService {
         'completados': books.where((b) => b.readingStatus == 'completado').length,
       };
     } catch (e) {
-      print('Error al obtener estadísticas: $e');
+      debugPrint('Error al obtener estadísticas: $e');
       return {
         'total': 0,
         'leyendo': 0,
@@ -205,7 +206,7 @@ class BibliotecaService {
       final books = await getBibliotecaBooks();
       return books.where((book) => book.readingStatus == status).toList();
     } catch (e) {
-      print('Error al obtener libros por estado: $e');
+      debugPrint('Error al obtener libros por estado: $e');
       return [];
     }
   }

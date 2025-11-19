@@ -167,6 +167,21 @@ class InAppNotificationService {
     _notifyListeners();
   }
 
+  /// Agregar notificación genérica
+  Future<void> addNotification(String titulo, String mensaje, String tipo) async {
+    final notification = InAppNotification(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      titulo: titulo,
+      mensaje: mensaje,
+      tipo: tipo,
+      fecha: DateTime.now(),
+      leida: false,
+    );
+    
+    await _saveNotification(notification);
+    _notifyListeners();
+  }
+
   /// Obtener todas las notificaciones
   Future<List<InAppNotification>> getAll() async {
     final prefs = await SharedPreferences.getInstance();

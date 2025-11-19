@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'circle_item.dart';
 import '../screens/category_books_screen.dart';
+import '../config/categories_config.dart';
 
 class CategoriesSection extends StatelessWidget {
   final int currentNavIndex;
@@ -29,7 +30,7 @@ class CategoriesSection extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-        
+
         // CORRECCIÓN: Contenedor con altura fija
         SizedBox(
           height: 120, // Altura suficiente para círculo + texto en 2 líneas
@@ -38,44 +39,14 @@ class CategoriesSection extends StatelessWidget {
             physics: const BouncingScrollPhysics(),
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Row(
-              children: [
-                CircleItem(
-                  icon: Icons.code,
-                  label: 'Programación',
-                  color: Colors.blue,
-                  onTap: () => _navigateToCategory(context, 'programming', Icons.code, Colors.blue),
-                ),
-                CircleItem(
-                  icon: Icons.science,
-                  label: 'Ciencias',
-                  color: Colors.green,
-                  onTap: () => _navigateToCategory(context, 'science', Icons.science, Colors.green),
-                ),
-                CircleItem(
-                  icon: Icons.history_edu,
-                  label: 'Historia',
-                  color: Colors.orange,
-                  onTap: () => _navigateToCategory(context, 'history', Icons.history_edu, Colors.orange),
-                ),
-                CircleItem(
-                  icon: Icons.psychology,
-                  label: 'Filosofía',
-                  color: Colors.purple,
-                  onTap: () => _navigateToCategory(context, 'philosophy', Icons.psychology, Colors.purple),
-                ),
-                CircleItem(
-                  icon: Icons.theater_comedy,
-                  label: 'Literatura',
-                  color: Colors.red,
-                  onTap: () => _navigateToCategory(context, 'fiction', Icons.theater_comedy, Colors.red),
-                ),
-                CircleItem(
-                  icon: Icons.calculate,
-                  label: 'Matemáticas',
-                  color: Colors.teal,
-                  onTap: () => _navigateToCategory(context, 'mathematics', Icons.calculate, Colors.teal),
-                ),
-              ],
+              children: CategoriesConfig.categories.map((category) {
+                return CircleItem(
+                  icon: category.icon,
+                  label: category.displayName,
+                  color: category.color,
+                  onTap: () => _navigateToCategory(context, category.id),
+                );
+              }).toList(),
             ),
           ),
         ),
@@ -83,14 +54,12 @@ class CategoriesSection extends StatelessWidget {
     );
   }
 
-  void _navigateToCategory(BuildContext context, String category, IconData icon, Color color) {
+  void _navigateToCategory(BuildContext context, String categoryId) {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => CategoryBooksScreen(
-          categoryName: category,
-          categoryIcon: icon,
-          categoryColor: color,
+          categoryId: categoryId,
           currentNavIndex: currentNavIndex,
           onNavTap: onNavTap,
         ),

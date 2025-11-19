@@ -1,0 +1,7 @@
+{
+  "dart.flutterHotReloadOnSave": "all",
+  "dart.previewFlutterUiGuides": true,
+  "dart.previewFlutterUiGuidesCustomTracking": true,
+  "files.autoSave": "afterDelay",
+  "files.autoSaveDelay": 1000
+}

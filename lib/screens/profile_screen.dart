@@ -566,6 +566,75 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  Future<void> _limpiarHistorial() async {
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.delete_sweep, color: Colors.orange),
+            SizedBox(width: 8),
+            Text('Limpiar Historial'),
+          ],
+        ),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '¿Estás seguro de que deseas eliminar todo tu historial de préstamos?',
+              style: TextStyle(fontSize: 14),
+            ),
+            SizedBox(height: 12),
+            Text(
+              'Esta acción no se puede deshacer.',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.red,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.orange,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Limpiar'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmar == true && mounted) {
+      final scaffoldMessenger = ScaffoldMessenger.of(context);
+      
+      // Limpiar el historial
+      await PrestamosService.clearHistorial();
+      
+      // Mostrar confirmación
+      scaffoldMessenger.showSnackBar(
+        const SnackBar(
+          content: Row(
+            children: [
+              Icon(Icons.check_circle, color: Colors.white),
+              SizedBox(width: 12),
+              Text('Historial eliminado correctamente'),
+            ],
+          ),
+          backgroundColor: Colors.green,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -729,7 +798,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         child: _buildStatCard(
                           icon: Icons.bookmark,
                           count: '$_reservasCount',
-                          label: 'Reservas',
+                          label: 'Lista de Espera',
                           color: Colors.orange,
                         ),
                       ),
@@ -905,6 +974,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ]),
 
                   const SizedBox(height: 24),
+
+                  // Botón Limpiar Historial
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: _limpiarHistorial,
+                      icon: const Icon(Icons.delete_sweep),
+                      label: const Text('Limpiar Historial'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.orange,
+                        side: const BorderSide(color: Colors.orange),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
 
                   // Botón Cerrar Sesión
                   SizedBox(

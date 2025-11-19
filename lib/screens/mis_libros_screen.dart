@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import '../widgets/bottom_nav.dart';
 import '../services/prestamos_service.dart';
 import '../services/reservas_service.dart';
+import '../models/book_model.dart';
+import '../services/google_books_api_service.dart';
+import 'book_reader_screen.dart';
 
 class MisLibrosScreen extends StatefulWidget {
   final int currentNavIndex;
@@ -96,7 +99,7 @@ class _MisLibrosScreenState extends State<MisLibrosScreen> with SingleTickerProv
             ),
             Tab(
               icon: const Icon(Icons.bookmark),
-              text: 'Reservas (${_reservas.length})',
+              text: 'Lista de Espera (${_reservas.length})',
             ),
             Tab(
               icon: const Icon(Icons.history),
@@ -151,7 +154,7 @@ class _MisLibrosScreenState extends State<MisLibrosScreen> with SingleTickerProv
     );
   }
 
-  // TAB 2: RESERVAS
+  // TAB 2: LISTA DE ESPERA
   Widget _buildReservasTab() {
     if (_isLoading) {
       return const Center(
@@ -164,8 +167,8 @@ class _MisLibrosScreenState extends State<MisLibrosScreen> with SingleTickerProv
     if (_reservas.isEmpty) {
       return _buildEmptyState(
         icon: Icons.bookmark_outline,
-        title: 'No tienes reservas activas',
-        message: 'Reserva libros cuando estén ocupados\npara asegurar tu turno',
+        title: 'No tienes libros en lista de espera',
+        message: 'Únete a la lista cuando no haya stock disponible\n(Máximo 3 libros en espera)',
       );
     }
 
@@ -423,6 +426,19 @@ class _MisLibrosScreenState extends State<MisLibrosScreen> with SingleTickerProv
                 ],
                 Expanded(
                   child: ElevatedButton.icon(
+                    onPressed: () => _leerLibro(prestamo),
+                    icon: const Icon(Icons.auto_stories, size: 16),
+                    label: const Text('Leer', style: TextStyle(fontSize: 12)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF10B981),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: ElevatedButton.icon(
                     onPressed: () => _devolverPrestamo(prestamo),
                     icon: const Icon(Icons.assignment_return, size: 16),
                     label: const Text('Devolver', style: TextStyle(fontSize: 12)),
@@ -671,6 +687,65 @@ class _MisLibrosScreenState extends State<MisLibrosScreen> with SingleTickerProv
         ),
       );
       _loadData();
+    }
+  }
+
+  Future<void> _leerLibro(Prestamo prestamo) async {
+    // Mostrar loading mientras obtenemos la información completa
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+
+    try {
+      // Intentar obtener información completa del libro desde Google Books API
+      BookModel? bookModel = await GoogleBooksApiService.getBookById(prestamo.libroId);
+
+      // Si no se encuentra, crear uno básico con los datos del préstamo
+      bookModel ??= BookModel(
+        id: prestamo.libroId,
+        title: prestamo.titulo,
+        authors: [prestamo.autor],
+        authorsString: prestamo.autor,
+        thumbnail: prestamo.thumbnail,
+        description: null,
+        publisher: null,
+        publishedDate: null,
+        pageCount: null,
+        categories: [],
+        averageRating: null,
+        ratingsCount: null,
+        language: 'es',
+      );
+
+      // Cerrar loading
+      if (mounted) {
+        Navigator.pop(context);
+
+        // Navegar a BookReaderScreen (WebView)
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => BookReaderScreen(book: bookModel!),
+          ),
+        );
+      }
+    } catch (e) {
+      // Cerrar loading
+      if (mounted) {
+        Navigator.pop(context);
+
+        // Mostrar error
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al cargar el libro: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 

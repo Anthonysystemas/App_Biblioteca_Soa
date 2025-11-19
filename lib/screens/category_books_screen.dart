@@ -1,22 +1,19 @@
 import 'package:flutter/material.dart';
-import '../services/open_library_api_service.dart';
+import '../services/google_books_api_service.dart';
 import '../models/book_model.dart';
 import '../widgets/book_card.dart';
 import '../widgets/bottom_nav.dart';
+import '../config/categories_config.dart';
 
 /// Pantalla para mostrar libros de una categoría específica
 class CategoryBooksScreen extends StatefulWidget {
-  final String categoryName;
-  final IconData categoryIcon;
-  final Color categoryColor;
+  final String categoryId; // Ahora usamos el ID de categoría
   final int currentNavIndex;
   final Function(int) onNavTap;
 
   const CategoryBooksScreen({
     super.key,
-    required this.categoryName,
-    required this.categoryIcon,
-    required this.categoryColor,
+    required this.categoryId,
     required this.currentNavIndex,
     required this.onNavTap,
   });
@@ -29,10 +26,12 @@ class _CategoryBooksScreenState extends State<CategoryBooksScreen> {
   List<BookModel> _books = [];
   bool _isLoading = true;
   String _error = '';
+  CategoryConfig? _category;
 
   @override
   void initState() {
     super.initState();
+    _category = CategoriesConfig.getCategoryById(widget.categoryId);
     _loadBooks();
   }
 
@@ -42,13 +41,21 @@ class _CategoryBooksScreenState extends State<CategoryBooksScreen> {
       _error = '';
     });
 
+    if (_category == null) {
+      setState(() {
+        _error = 'Categoría no encontrada';
+        _isLoading = false;
+      });
+      return;
+    }
+
     try {
-      // Buscar libros por categoría usando Open Library
-      final books = await OpenLibraryApiService.getBooksByCategory(
-        category: widget.categoryName,
+      // Usar Google Books API con múltiples categorías
+      final books = await GoogleBooksApiService.getBooksByMultipleCategories(
+        categories: _category!.subjects,
         maxResults: 30,
       );
-      
+
       if (mounted) {
         setState(() {
           _books = books;
@@ -67,16 +74,21 @@ class _CategoryBooksScreenState extends State<CategoryBooksScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Si no hay categoría, usar valores por defecto
+    final categoryName = _category?.displayName ?? 'Categoría';
+    final categoryIcon = _category?.icon ?? Icons.book;
+    final categoryColor = _category?.color ?? Colors.blue;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF7F8FC),
       appBar: AppBar(
         title: Row(
           children: [
-            Icon(widget.categoryIcon, size: 24),
+            Icon(categoryIcon, size: 24),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                widget.categoryName,
+                categoryName,
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
@@ -86,7 +98,7 @@ class _CategoryBooksScreenState extends State<CategoryBooksScreen> {
             ),
           ],
         ),
-        backgroundColor: widget.categoryColor,
+        backgroundColor: categoryColor,
         foregroundColor: Colors.white,
         elevation: 0,
       ),
@@ -115,16 +127,19 @@ class _CategoryBooksScreenState extends State<CategoryBooksScreen> {
   }
 
   Widget _buildLoadingState() {
+    final categoryName = _category?.displayName ?? 'esta categoría';
+    final categoryColor = _category?.color ?? Colors.blue;
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(widget.categoryColor),
+            valueColor: AlwaysStoppedAnimation<Color>(categoryColor),
           ),
           const SizedBox(height: 16),
           Text(
-            'Cargando libros de ${widget.categoryName}...',
+            'Cargando libros de $categoryName...',
             style: const TextStyle(
               fontSize: 16,
               color: Color(0xFF718096),
@@ -136,6 +151,8 @@ class _CategoryBooksScreenState extends State<CategoryBooksScreen> {
   }
 
   Widget _buildErrorState() {
+    final categoryColor = _category?.color ?? Colors.blue;
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(40),
@@ -172,7 +189,7 @@ class _CategoryBooksScreenState extends State<CategoryBooksScreen> {
               icon: const Icon(Icons.refresh),
               label: const Text('Reintentar'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: widget.categoryColor,
+                backgroundColor: categoryColor,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
@@ -184,6 +201,10 @@ class _CategoryBooksScreenState extends State<CategoryBooksScreen> {
   }
 
   Widget _buildEmptyState() {
+    final categoryName = _category?.displayName ?? 'esta categoría';
+    final categoryIcon = _category?.icon ?? Icons.book;
+    final categoryColor = _category?.color ?? Colors.blue;
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(40),
@@ -193,13 +214,13 @@ class _CategoryBooksScreenState extends State<CategoryBooksScreen> {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: widget.categoryColor.withValues(alpha: 0.1),
+                color: categoryColor.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                widget.categoryIcon,
+                categoryIcon,
                 size: 64,
-                color: widget.categoryColor,
+                color: categoryColor,
               ),
             ),
             const SizedBox(height: 24),
@@ -214,7 +235,7 @@ class _CategoryBooksScreenState extends State<CategoryBooksScreen> {
             ),
             const SizedBox(height: 12),
             Text(
-              'No hay libros disponibles en la categoría ${widget.categoryName}',
+              'No hay libros disponibles en la categoría $categoryName',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 16,
@@ -228,7 +249,7 @@ class _CategoryBooksScreenState extends State<CategoryBooksScreen> {
               icon: const Icon(Icons.arrow_back),
               label: const Text('Volver'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: widget.categoryColor,
+                backgroundColor: categoryColor,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 shape: RoundedRectangleBorder(
@@ -243,9 +264,11 @@ class _CategoryBooksScreenState extends State<CategoryBooksScreen> {
   }
 
   Widget _buildBooksList() {
+    final categoryColor = _category?.color ?? Colors.blue;
+
     return RefreshIndicator(
       onRefresh: _loadBooks,
-      color: widget.categoryColor,
+      color: categoryColor,
       child: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
@@ -268,13 +291,13 @@ class _CategoryBooksScreenState extends State<CategoryBooksScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: widget.categoryColor.withValues(alpha: 0.1),
+                      color: categoryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Text(
                       '${_books.length}',
                       style: TextStyle(
-                        color: widget.categoryColor,
+                        color: categoryColor,
                         fontWeight: FontWeight.w600,
                         fontSize: 14,
                       ),

@@ -178,4 +178,61 @@ class StockService {
     // Crear nuevo registro
     await actualizarStockLocal(libroId, cantidad - _getStockPorDefecto(libroId));
   }
+
+  /// Establece stock específico para testing (fuerza un valor exacto)
+  static Future<void> setStockManual(String libroId, int cantidad) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final stockJson = prefs.getString(_stockKey);
+      
+      List<StockItem> stocks = [];
+      if (stockJson != null) {
+        final List<dynamic> decoded = json.decode(stockJson);
+        stocks = decoded.map((json) => StockItem.fromJson(json)).toList();
+      }
+      
+      // Buscar el índice del libro
+      final index = stocks.indexWhere((s) => s.libroId == libroId);
+      
+      if (index != -1) {
+        // Actualizar stock existente
+        stocks[index] = StockItem(
+          libroId: libroId,
+          cantidad: cantidad >= 0 ? cantidad : 0,
+          ultimaActualizacion: DateTime.now(),
+        );
+      } else {
+        // Crear nuevo registro de stock
+        stocks.add(StockItem(
+          libroId: libroId,
+          cantidad: cantidad >= 0 ? cantidad : 0,
+          ultimaActualizacion: DateTime.now(),
+        ));
+      }
+      
+      // Guardar
+      await prefs.setString(_stockKey, json.encode(stocks.map((s) => s.toJson()).toList()));
+      debugPrint('📦 Stock actualizado manualmente para $libroId: $cantidad unidades');
+    } catch (e) {
+      debugPrint('Error al establecer stock manual: $e');
+    }
+  }
+
+  /// Configura libros de prueba con stock = 0 para testing de lista de espera
+  static Future<void> configurarLibrosParaPruebas() async {
+    // Estos son algunos IDs de Google Books populares
+    final librosConStockCero = [
+      'nggnmAEACAAJ',  // "1984" de George Orwell
+      'wrOQLV6xB-wC',  // "The Great Gatsby"
+      '_ojXNuzgHRcC',  // "Pride and Prejudice"
+      'yxv1LK5gyAYC',  // "Harry Potter and the Sorcerer's Stone"
+      'yl4dILkcqm4C',  // "The Hunger Games"
+    ];
+
+    for (final libroId in librosConStockCero) {
+      await setStockManual(libroId, 0);
+    }
+
+    debugPrint('✅ Configurados ${librosConStockCero.length} libros con stock = 0 para testing');
+  }
 }

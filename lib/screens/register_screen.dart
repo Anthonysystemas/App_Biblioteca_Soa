@@ -19,7 +19,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
+      backgroundColor: const Color(0xFFE3F2FD), // Fondo azul claro
       body: CustomPaint(
         painter: RegisterBackgroundPainter(),
         child: SafeArea(
@@ -82,9 +82,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         const Text(
                           'Nombre Completo',
                           style: TextStyle(
-                            color: Colors.grey,
+                            color: Color(0xFF1976D2), // Azul vibrante
                             fontSize: 14,
-                            fontWeight: FontWeight.w500,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -92,8 +92,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         // Campo Name
                         Container(
                           decoration: BoxDecoration(
-                            color: Colors.grey.shade100,
+                            color: Colors.white,
                             borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: const Color(0xFFBBDEFB), // Borde azul claro
+                              width: 1.5,
+                            ),
                           ),
                           child: TextField(
                             controller: _nameController,
@@ -116,9 +120,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         const Text(
                           'Correo Electrónico',
                           style: TextStyle(
-                            color: Colors.grey,
+                            color: Color(0xFF1976D2), // Azul vibrante
                             fontSize: 14,
-                            fontWeight: FontWeight.w500,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -126,8 +130,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         // Campo Email
                         Container(
                           decoration: BoxDecoration(
-                            color: Colors.grey.shade100,
+                            color: Colors.white,
                             borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: const Color(0xFFBBDEFB), // Borde azul claro
+                              width: 1.5,
+                            ),
                           ),
                           child: TextField(
                             controller: _emailController,
@@ -150,9 +158,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         const Text(
                           'Contraseña',
                           style: TextStyle(
-                            color: Colors.grey,
+                            color: Color(0xFF1976D2), // Azul vibrante
                             fontSize: 14,
-                            fontWeight: FontWeight.w500,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -160,8 +168,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         // Campo Password
                         Container(
                           decoration: BoxDecoration(
-                            color: Colors.grey.shade100,
+                            color: Colors.white,
                             borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: const Color(0xFFBBDEFB), // Borde azul claro
+                              width: 1.5,
+                            ),
                           ),
                           child: TextField(
                             controller: _passwordController,
@@ -207,11 +219,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               );
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue.shade500,
+                              backgroundColor: const Color(0xFF1976D2), // Azul vibrante
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
                               ),
-                              elevation: 0,
+                              elevation: 2,
+                              shadowColor: const Color(0xFF1976D2).withValues(alpha: 0.3),
                             ),
                             child: const Text(
                               'Registrarse',
@@ -235,10 +248,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             child: const Text(
                               'Ya tengo cuenta',
                               style: TextStyle(
-                                color: Colors.black87,
+                                color: Color(0xFF1976D2), // Azul vibrante
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
                                 decoration: TextDecoration.underline,
+                                decorationColor: Color(0xFF1976D2),
                               ),
                             ),
                           ),

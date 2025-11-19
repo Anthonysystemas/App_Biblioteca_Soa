@@ -73,15 +73,15 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F8FC),
+      backgroundColor: const Color(0xFFE3F2FD),
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              const Color(0xFF667EEA).withValues(alpha: 0.1),
-              const Color(0xFFF7F8FC),
+              Color(0xFFE3F2FD), // Azul muy claro
+              Color(0xFFFFFFFF), // Blanco
             ],
           ),
         ),
@@ -97,9 +97,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     padding: const EdgeInsets.all(40),
                     alignment: Alignment.centerLeft,
                     child: const Text(
-                      'Welcome\nBack',
+                      'Iniciar\nSesión',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: Color(0xFF0D47A1), // Azul marino oscuro
                         fontSize: 36,
                         fontWeight: FontWeight.bold,
                       ),
@@ -149,10 +149,20 @@ class _LoginScreenState extends State<LoginScreen> {
                           controller: _usernameController,
                           enabled: !_isLoading,
                           decoration: InputDecoration(
-                            labelText: 'Usuario',
-                            prefixIcon: const Icon(Icons.person_outline),
+                            labelText: 'Correo electronico',
+                            labelStyle: const TextStyle(color: Color(0xFF1976D2)),
+                            prefixIcon: const Icon(Icons.person_outline, color: Color(0xFF1976D2)),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
+                              borderSide: const BorderSide(color: Color(0xFFBBDEFB)),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: const BorderSide(color: Color(0xFFBBDEFB), width: 1.5),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: const BorderSide(color: Color(0xFF1976D2), width: 2),
                             ),
                             fillColor: Colors.white,
                             filled: true,
@@ -178,9 +188,19 @@ class _LoginScreenState extends State<LoginScreen> {
                           obscureText: true,
                           decoration: InputDecoration(
                             labelText: 'Contraseña',
-                            prefixIcon: const Icon(Icons.lock_outline),
+                            labelStyle: const TextStyle(color: Color(0xFF1976D2)),
+                            prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF1976D2)),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
+                              borderSide: const BorderSide(color: Color(0xFFBBDEFB)),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: const BorderSide(color: Color(0xFFBBDEFB), width: 1.5),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: const BorderSide(color: Color(0xFF1976D2), width: 2),
                             ),
                             fillColor: Colors.white,
                             filled: true,
@@ -210,13 +230,15 @@ class _LoginScreenState extends State<LoginScreen> {
                           width: double.infinity,
                           height: 50,
                           child: ElevatedButton(
-                            onPressed: _isLoading ? null : _handleLogin, // Deshabilitar durante carga
+                            onPressed: _isLoading ? null : _handleLogin,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF4299E1),
+                              backgroundColor: const Color(0xFF1976D2), // Azul vibrante
                               disabledBackgroundColor: Colors.grey.shade300,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
+                              elevation: 2,
+                              shadowColor: const Color(0xFF1976D2).withValues(alpha: 0.3),
                             ),
                             child: _isLoading
                                 ? const SizedBox(
@@ -254,7 +276,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             child: const Text(
                               '¿Olvidaste tu contraseña?',
                               style: TextStyle(
-                                color: Color(0xFF667EEA),
+                                color: Color(0xFF2196F3), // Azul claro
                                 fontSize: 14,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -285,7 +307,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 TextSpan(
                                   text: "Regístrate",
                                   style: TextStyle(
-                                    color: _isLoading ? Colors.grey : const Color(0xFF4299E1),
+                                    color: _isLoading ? Colors.grey : const Color(0xFF1976D2), // Azul vibrante
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),

@@ -55,8 +55,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Color(0xFF667EEA),
-              Color(0xFF764BA2),
+              Color(0xFF0D47A1), // Azul marino oscuro
+              Color(0xFF1976D2), // Azul vibrante
             ],
           ),
         ),
@@ -155,24 +155,24 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           keyboardType: TextInputType.emailAddress,
                           decoration: InputDecoration(
                             hintText: 'correo@ejemplo.com',
-                            prefixIcon: const Icon(Icons.email_outlined),
+                            prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFF1976D2)),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                              borderSide: const BorderSide(color: Color(0xFFBBDEFB)),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                              borderSide: const BorderSide(color: Color(0xFFBBDEFB), width: 1.5),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                               borderSide: const BorderSide(
-                                color: Color(0xFF667EEA),
+                                color: Color(0xFF1976D2),
                                 width: 2,
                               ),
                             ),
                             filled: true,
-                            fillColor: const Color(0xFFF7FAFC),
+                            fillColor: Colors.white,
                             contentPadding: const EdgeInsets.symmetric(
                               horizontal: 16,
                               vertical: 14,
@@ -250,12 +250,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           child: ElevatedButton(
                             onPressed: _isLoading ? null : _handleResetPassword,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF667EEA),
+                              backgroundColor: const Color(0xFF1976D2), // Azul vibrante
                               foregroundColor: Colors.white,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              elevation: 0,
+                              elevation: 2,
+                              shadowColor: const Color(0xFF1976D2).withValues(alpha: 0.3),
                             ),
                             child: _isLoading
                                 ? const SizedBox(
@@ -286,7 +287,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             icon: const Icon(Icons.arrow_back, size: 18),
                             label: const Text('Volver al inicio de sesión'),
                             style: TextButton.styleFrom(
-                              foregroundColor: const Color(0xFF667EEA),
+                              foregroundColor: const Color(0xFF2196F3), // Azul claro
                             ),
                           ),
                         ),

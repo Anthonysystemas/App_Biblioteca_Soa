@@ -5,6 +5,7 @@ import '../services/recently_viewed_service.dart';
 import '../models/user.dart';
 import '../models/book_model.dart';
 import '../screens/book_reader_screen.dart';
+import '../screens/profile_screen.dart';
 
 class TopSection extends StatefulWidget {
   const TopSection({super.key});
@@ -50,21 +51,18 @@ class _TopSectionState extends State<TopSection> {
   }
 
   Future<void> _pickProfileImage() async {
-    // TODO: Implementar selección de imagen
-    // Por ahora solo muestra un diálogo
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Cambiar foto de perfil'),
-        content: const Text('Funcionalidad de selección de imagen próximamente.\n\nPor ahora puedes personalizar tu perfil con tu nombre.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Entendido'),
-          ),
-        ],
+    // Navegar al perfil para cambiar la foto
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const ProfileScreen(),
       ),
     );
+    
+    // Recargar usuario después de regresar del perfil
+    if (mounted) {
+      _loadUser();
+    }
   }
 
   @override

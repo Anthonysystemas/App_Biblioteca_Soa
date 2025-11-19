@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import '../widgets/bottom_nav.dart';
 import '../widgets/book_card.dart';
-import '../services/open_library_api_service.dart';
+import '../services/google_books_api_service.dart';
 import '../models/book_model.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -117,7 +117,7 @@ class _SearchScreenState extends State<SearchScreen> {
     try {
       debugPrint('Buscando: "$query"');
       
-      final results = await OpenLibraryApiService.searchBooks(
+      final results = await GoogleBooksApiService.searchBooks(
         query: query,
         maxResults: 40,
       );
@@ -401,7 +401,6 @@ class _SearchScreenState extends State<SearchScreen> {
               final book = _searchResults[index];
               return BookCard.fromBookModel(
                 book,
-                showFavoriteIcon: true,
                 onTap: () {
                   // Acción al tocar la tarjeta del libro
                 },

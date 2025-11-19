@@ -37,9 +37,19 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
 
   void _initializeWebView() {
     try {
-      // URL de vista previa de Open Library
-      final previewUrl = widget.book.previewLink ?? 
-          'https://openlibrary.org${widget.book.id}';
+      // Usar previewLink de Google Books API
+      String previewUrl;
+      
+      if (widget.book.previewLink != null && widget.book.previewLink!.isNotEmpty) {
+        // Usar el link de vista previa de Google Books
+        previewUrl = widget.book.previewLink!;
+      } else if (widget.book.infoLink != null && widget.book.infoLink!.isNotEmpty) {
+        // Usar el link de información como alternativa
+        previewUrl = widget.book.infoLink!;
+      } else {
+        // Construir URL de Google Books con el ID
+        previewUrl = 'https://books.google.com/books?id=${widget.book.id}&printsec=frontcover';
+      }
 
       _controller = WebViewController()
         ..setJavaScriptMode(JavaScriptMode.unrestricted)
@@ -210,45 +220,9 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
             
             const SizedBox(height: 24),
             
-            // Descripción
-            if (widget.book.description != null) ...[
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Descripción',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1A202C),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      widget.book.description!,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[700],
-                        height: 1.5,
-                      ),
-                      textAlign: TextAlign.justify,
-                    ),
-                  ],
-                ),
-              ),
+            // Descripción con límite de caracteres
+            if (widget.book.description != null && widget.book.description!.isNotEmpty) ...[
+              _DescriptionCard(description: widget.book.description!),
               const SizedBox(height: 24),
             ],
             
@@ -256,15 +230,39 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: () {
-                  // Intentar cargar WebView
-                  setState(() {
-                    _isWebViewSupported = true;
-                  });
-                  _initializeWebView();
+                onPressed: () async {
+                  // Guardar context antes del async
+                  final scaffoldMessenger = ScaffoldMessenger.of(context);
+                  
+                  // Abrir directamente con url_launcher (funciona en todas las plataformas)
+                  String previewUrl;
+                  
+                  if (widget.book.previewLink != null && widget.book.previewLink!.isNotEmpty) {
+                    previewUrl = widget.book.previewLink!;
+                  } else if (widget.book.infoLink != null && widget.book.infoLink!.isNotEmpty) {
+                    previewUrl = widget.book.infoLink!;
+                  } else {
+                    previewUrl = 'https://books.google.com/books?id=${widget.book.id}&printsec=frontcover';
+                  }
+
+                  final uri = Uri.parse(previewUrl);
+                  
+                  if (await canLaunchUrl(uri)) {
+                    await launchUrl(
+                      uri,
+                      mode: LaunchMode.inAppWebView, // Intenta abrir en WebView dentro de la app
+                    );
+                  } else {
+                    scaffoldMessenger.showSnackBar(
+                      const SnackBar(
+                        content: Text('No se puede abrir el libro en este momento'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
                 },
-                icon: const Icon(Icons.menu_book),
-                label: const Text('Ver en Open Library'),
+                icon: const Icon(Icons.auto_stories),
+                label: const Text('Leer libro ahora'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF667EEA),
                   foregroundColor: Colors.white,
@@ -272,23 +270,6 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: () => _openInBrowser(),
-                icon: const Icon(Icons.open_in_browser),
-                label: const Text('Abrir en navegador externo'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFF667EEA),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  side: const BorderSide(color: Color(0xFF667EEA)),
                 ),
               ),
             ),
@@ -621,5 +602,207 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
         );
       }
     }
+  }
+}
+
+// Widget para descripción expandible
+class _DescriptionCard extends StatefulWidget {
+  final String description;
+
+  const _DescriptionCard({required this.description});
+
+  @override
+  State<_DescriptionCard> createState() => _DescriptionCardState();
+}
+
+class _DescriptionCardState extends State<_DescriptionCard> {
+  bool _isExpanded = false;
+  static const int _maxChars = 300;
+
+  @override
+  Widget build(BuildContext context) {
+    // Limpiar tags HTML de la descripción
+    String cleanDescription = widget.description
+        .replaceAll(RegExp(r'<[^>]*>'), '') // Eliminar todas las tags HTML
+        .replaceAll('&nbsp;', ' ')           // Reemplazar espacios HTML
+        .replaceAll('&amp;', '&')            // Reemplazar &
+        .replaceAll('&lt;', '<')             // Reemplazar <
+        .replaceAll('&gt;', '>')             // Reemplazar >
+        .replaceAll('&quot;', '"')           // Reemplazar "
+        .trim();                             // Eliminar espacios al inicio/final
+    
+    final needsTruncation = cleanDescription.length > _maxChars;
+    final displayText = _isExpanded || !needsTruncation
+        ? cleanDescription
+        : '${cleanDescription.substring(0, _maxChars)}...';
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Descripción',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1A202C),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            displayText,
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey[700],
+              height: 1.5,
+            ),
+            textAlign: TextAlign.justify,
+          ),
+          if (needsTruncation) ...[
+            const SizedBox(height: 8),
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  _isExpanded = !_isExpanded;
+                });
+              },
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    _isExpanded ? 'Ver menos' : 'Ver más',
+                    style: const TextStyle(
+                      color: Color(0xFF667EEA),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Icon(
+                    _isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                    color: const Color(0xFF667EEA),
+                    size: 20,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+// Pantalla dedicada solo para WebView
+class _WebViewOnlyScreen extends StatefulWidget {
+  final BookModel book;
+
+  const _WebViewOnlyScreen({required this.book});
+
+  @override
+  State<_WebViewOnlyScreen> createState() => _WebViewOnlyScreenState();
+}
+
+class _WebViewOnlyScreenState extends State<_WebViewOnlyScreen> {
+  late WebViewController _controller;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeWebView();
+  }
+
+  void _initializeWebView() {
+    String previewUrl;
+    
+    if (widget.book.previewLink != null && widget.book.previewLink!.isNotEmpty) {
+      previewUrl = widget.book.previewLink!;
+    } else if (widget.book.infoLink != null && widget.book.infoLink!.isNotEmpty) {
+      previewUrl = widget.book.infoLink!;
+    } else {
+      previewUrl = 'https://books.google.com/books?id=${widget.book.id}&printsec=frontcover';
+    }
+
+    _controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setBackgroundColor(const Color(0x00000000))
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onPageStarted: (String url) {
+            if (mounted) {
+              setState(() {
+                _isLoading = true;
+              });
+            }
+          },
+          onPageFinished: (String url) {
+            if (mounted) {
+              setState(() {
+                _isLoading = false;
+              });
+            }
+          },
+        ),
+      )
+      ..loadRequest(Uri.parse(previewUrl));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          widget.book.title.length > 30
+              ? '${widget.book.title.substring(0, 30)}...'
+              : widget.book.title,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+        ),
+        backgroundColor: const Color(0xFF667EEA),
+        foregroundColor: Colors.white,
+        elevation: 0,
+      ),
+      body: Stack(
+        children: [
+          WebViewWidget(controller: _controller),
+          if (_isLoading)
+            Container(
+              color: Colors.white,
+              child: const Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF667EEA)),
+                    ),
+                    SizedBox(height: 20),
+                    Text(
+                      'Cargando libro...',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
   }
 }

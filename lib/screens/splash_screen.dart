@@ -178,119 +178,128 @@ class _SplashScreenState extends State<SplashScreen>
               ),
             ),
             child: SafeArea(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Spacer(flex: 1),
-                  
-                  // Logo/Ícono principal con animaciones
-                  AnimatedBuilder(
-                    animation: _iconController,
-                    builder: (context, child) {
-                      return Transform.scale(
-                        scale: _iconScaleAnimation.value,
-                        child: Transform.rotate(
-                          angle: _iconRotationAnimation.value,
-                          child: Container(
-                            width: screenWidth * 0.3,
-                            height: screenWidth * 0.3,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.9),
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.3),
-                                  blurRadius: 20,
-                                  offset: const Offset(0, 10),
+              child: SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: MediaQuery.of(context).size.height - 
+                              MediaQuery.of(context).padding.top - 
+                              MediaQuery.of(context).padding.bottom,
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(height: screenHeight * 0.1),
+                      
+                      // Logo/Ícono principal con animaciones
+                      AnimatedBuilder(
+                        animation: _iconController,
+                        builder: (context, child) {
+                          return Transform.scale(
+                            scale: _iconScaleAnimation.value,
+                            child: Transform.rotate(
+                              angle: _iconRotationAnimation.value,
+                              child: Container(
+                                width: screenWidth * 0.3,
+                                height: screenWidth * 0.3,
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.9),
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: 0.3),
+                                      blurRadius: 20,
+                                      offset: const Offset(0, 10),
+                                    ),
+                                  ],
+                                ),
+                                child: Icon(
+                                  Icons.library_books,
+                                  size: screenWidth * 0.15,
+                                  color: const Color(0xFF667EEA),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+
+                      SizedBox(height: screenHeight * 0.05),
+
+                      // Texto principal con animaciones
+                      AnimatedBuilder(
+                        animation: _textController,
+                        builder: (context, child) {
+                          return Transform.translate(
+                            offset: Offset(0, _textSlideAnimation.value),
+                            child: Opacity(
+                              opacity: _textOpacityAnimation.value,
+                              child: Column(
+                                children: [
+                                  Text(
+                                    'BiblioTeca',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: screenWidth * 0.08,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: 2,
+                                    ),
+                                  ),
+                                  SizedBox(height: screenHeight * 0.01),
+                                  Text(
+                                    'Tu biblioteca digital',
+                                    style: TextStyle(
+                                      color: Colors.white.withValues(alpha: 0.9),
+                                      fontSize: screenWidth * 0.045,
+                                      fontWeight: FontWeight.w300,
+                                      letterSpacing: 1,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+
+                      SizedBox(height: screenHeight * 0.1),
+
+                      // Indicador de carga con animación
+                      AnimatedBuilder(
+                        animation: _backgroundController,
+                        builder: (context, child) {
+                          return Opacity(
+                            opacity: _loadingAnimation.value,
+                            child: Column(
+                              children: [
+                                SizedBox(
+                                  width: 30,
+                                  height: 30,
+                                  child: CircularProgressIndicator(
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white.withValues(alpha: 0.8),
+                                    ),
+                                    strokeWidth: 3,
+                                  ),
+                                ),
+                                SizedBox(height: screenHeight * 0.02),
+                                Text(
+                                  'Cargando tu biblioteca...',
+                                  style: TextStyle(
+                                    color: Colors.white.withValues(alpha: 0.8),
+                                    fontSize: screenWidth * 0.035,
+                                    fontWeight: FontWeight.w400,
+                                  ),
                                 ),
                               ],
                             ),
-                            child: Icon(
-                              Icons.library_books,
-                              size: screenWidth * 0.15,
-                              color: const Color(0xFF667EEA),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
+                          );
+                        },
+                      ),
+
+                      SizedBox(height: screenHeight * 0.05),
+                    ],
                   ),
-
-                  SizedBox(height: screenHeight * 0.05),
-
-                  // Texto principal con animaciones
-                  AnimatedBuilder(
-                    animation: _textController,
-                    builder: (context, child) {
-                      return Transform.translate(
-                        offset: Offset(0, _textSlideAnimation.value),
-                        child: Opacity(
-                          opacity: _textOpacityAnimation.value,
-                          child: Column(
-                            children: [
-                              Text(
-                                'BiblioTeca',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: screenWidth * 0.08,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 2,
-                                ),
-                              ),
-                              SizedBox(height: screenHeight * 0.01),
-                              Text(
-                                'Tu biblioteca digital',
-                                style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.9),
-                                  fontSize: screenWidth * 0.045,
-                                  fontWeight: FontWeight.w300,
-                                  letterSpacing: 1,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-
-                  const Spacer(flex: 1),
-
-                  // Indicador de carga con animación
-                  AnimatedBuilder(
-                    animation: _backgroundController,
-                    builder: (context, child) {
-                      return Opacity(
-                        opacity: _loadingAnimation.value,
-                        child: Column(
-                          children: [
-                            SizedBox(
-                              width: 30,
-                              height: 30,
-                              child: CircularProgressIndicator(
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  Colors.white.withValues(alpha: 0.8),
-                                ),
-                                strokeWidth: 3,
-                              ),
-                            ),
-                            SizedBox(height: screenHeight * 0.02),
-                            Text(
-                              'Cargando tu biblioteca...',
-                              style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.8),
-                                fontSize: screenWidth * 0.035,
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-
-                  SizedBox(height: screenHeight * 0.05),
-                ],
+                ),
               ),
             ),
           );

@@ -59,13 +59,13 @@ class LoginBackgroundPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-// Register Background (Gris-Azul)
+// Register Background (Ocean Blue)
 class RegisterBackgroundPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()..style = PaintingStyle.fill;
     
-    // Forma principal gris-azul
+    // Forma principal azul
     final path = Path();
     path.moveTo(0, 0);
     path.lineTo(size.width, 0);
@@ -82,8 +82,8 @@ class RegisterBackgroundPainter extends CustomPainter {
     
     paint.shader = LinearGradient(
       colors: [
-        const Color(0xFF4A5568), // Gris
-        const Color(0xFF4299E1), // Azul
+        const Color(0xFF0D47A1), // Azul marino oscuro
+        const Color(0xFF1976D2), // Azul vibrante
       ],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
@@ -105,8 +105,8 @@ class RegisterBackgroundPainter extends CustomPainter {
     
     paint.shader = LinearGradient(
       colors: [
-        const Color(0xFF63B3ED), // Azul claro
-        const Color(0xFF4299E1), // Azul
+        const Color(0xFF2196F3), // Azul claro
+        const Color(0xFF64B5F6), // Azul muy claro
       ],
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,

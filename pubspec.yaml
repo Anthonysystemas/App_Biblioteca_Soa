@@ -40,6 +40,13 @@ dependencies:
   url_launcher: ^6.2.1
   image_picker: ^1.0.7
   flutter_local_notifications: ^17.0.0
+  # Lector de PDF y EPUB
+  syncfusion_flutter_pdfviewer: ^28.1.33
+  epub_view: ^3.0.0
+  file_picker: ^8.1.6
+  path_provider: ^2.1.5
+  permission_handler: ^11.3.1
+  dio: ^5.7.0
 
 dev_dependencies:
   flutter_test:

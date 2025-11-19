@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import '../services/open_library_api_service.dart';
+import '../services/google_books_api_service.dart';
 import '../models/book_model.dart';
 import 'book_card.dart';
+import 'book/book_detail_modal.dart';
 
 class LibrosMasLeidosSection extends StatefulWidget {
   const LibrosMasLeidosSection({super.key});
@@ -41,7 +42,7 @@ class _LibrosMasLeidosSectionState extends State<LibrosMasLeidosSection> {
       
       for (String category in categories) {
         try {
-          final categoryBooks = await OpenLibraryApiService.getBooksByCategory(
+          final categoryBooks = await GoogleBooksApiService.getBooksByCategory(
             category: category,
             maxResults: 4,
           );
@@ -301,7 +302,6 @@ class _LibrosMasLeidosSectionState extends State<LibrosMasLeidosSection> {
           final book = _books[index];
           return BookCard.fromBookModel(
             book,
-            showFavoriteIcon: true,
             onTap: () {
               _showBookPreview(book);
             },
@@ -312,111 +312,11 @@ class _LibrosMasLeidosSectionState extends State<LibrosMasLeidosSection> {
   }
 
   void _showBookPreview(BookModel book) {
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        contentPadding: const EdgeInsets.all(16),
-        content: SizedBox(
-          width: MediaQuery.of(context).size.width * 0.8,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (book.thumbnail != null)
-                Container(
-                  width: 80,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.2),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.network(
-                      book.thumbnail!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: Colors.blue,
-                          child: const Icon(
-                            Icons.book,
-                            color: Colors.white,
-                            size: 30,
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              const SizedBox(height: 12),
-              Text(
-                book.title,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1A202C),
-                ),
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 6),
-              Text(
-                book.authorsString,
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Color(0xFF718096),
-                ),
-                textAlign: TextAlign.center,
-              ),
-              if (book.description != null) ...[
-                const SizedBox(height: 8),
-                Text(
-                  book.description!,
-                  style: const TextStyle(
-                    fontSize: 11,
-                    color: Color(0xFF4A5568),
-                    height: 1.3,
-                  ),
-                  textAlign: TextAlign.center,
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cerrar', style: TextStyle(fontSize: 12)),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Abriendo "${book.title}"...'),
-                  duration: const Duration(seconds: 2),
-                ),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF667EEA),
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Ver más', style: TextStyle(fontSize: 12)),
-          ),
-        ],
-      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => BookDetailModal(book: book),
     );
   }
 }

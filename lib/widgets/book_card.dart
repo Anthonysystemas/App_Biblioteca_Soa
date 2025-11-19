@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/book_model.dart';
 import 'common/book_image.dart';
-import 'common/action_button.dart';
 import 'book/book_detail_modal.dart';
 import 'book/quick_action_buttons.dart';
 
@@ -13,7 +12,6 @@ class BookCard extends StatelessWidget {
   final String? imagePath;
   final Color? dominantColor;
   final VoidCallback? onTap;
-  final bool showFavoriteIcon;
   final bool showBibliotecaIcon;
   final bool showQuickActions;
 
@@ -25,7 +23,6 @@ class BookCard extends StatelessWidget {
     this.imagePath,
     this.dominantColor,
     this.onTap,
-    this.showFavoriteIcon = false,
     this.showBibliotecaIcon = true,
     this.showQuickActions = true,
   });
@@ -33,14 +30,12 @@ class BookCard extends StatelessWidget {
   factory BookCard.fromBookModel(
     BookModel book, {
     VoidCallback? onTap,
-    bool showFavoriteIcon = false,
     bool showBibliotecaIcon = true,
     bool showQuickActions = true,
   }) {
     return BookCard(
       book: book,
       onTap: onTap,
-      showFavoriteIcon: showFavoriteIcon,
       showBibliotecaIcon: showBibliotecaIcon,
       showQuickActions: showQuickActions,
     );
@@ -52,7 +47,6 @@ class BookCard extends StatelessWidget {
     required String imagePath,
     required Color dominantColor,
     VoidCallback? onTap,
-    bool showFavoriteIcon = false,
     bool showBibliotecaIcon = true,
   }) {
     return BookCard(
@@ -61,7 +55,6 @@ class BookCard extends StatelessWidget {
       imagePath: imagePath,
       dominantColor: dominantColor,
       onTap: onTap,
-      showFavoriteIcon: showFavoriteIcon,
       showBibliotecaIcon: showBibliotecaIcon,
     );
   }
@@ -117,18 +110,6 @@ class BookCard extends StatelessWidget {
                       fit: BoxFit.contain,
                     ),
                   ),
-
-                  // Botón de favorito (si está habilitado y hay libro)
-                  if (showFavoriteIcon && book != null)
-                    Positioned(
-                      top: 6,
-                      right: 6,
-                      child: FavoriteButton(
-                        book: book!,
-                        size: isSmallScreen ? 12 : 14,
-                        padding: EdgeInsets.all(isSmallScreen ? 4 : 6),
-                      ),
-                    ),
                 ],
               ),
             ),
@@ -141,11 +122,14 @@ class BookCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     // Título y autor
                     Expanded(
+                      flex: 1,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
                             bookTitle,

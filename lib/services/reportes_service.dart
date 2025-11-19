@@ -2,8 +2,6 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'prestamos_service.dart';
 import 'reservas_service.dart';
-import 'favorites_service.dart';
-import 'biblioteca_service.dart';
 
 /// Servicio de Reportes y Estadísticas
 class ReportesService {
@@ -20,8 +18,7 @@ class ReportesService {
     
     final prestamos = await PrestamosService.getPrestamosActivos();
     final reservas = await ReservasService.getReservasActivas();
-    final favoritos = await FavoritesService.getFavorites();
-    final biblioteca = await BibliotecaService.getBibliotecaBooks();
+    final historial = await PrestamosService.getHistorial();
     
     // Calcular libros leídos (préstamos devueltos)
     final prefs = await SharedPreferences.getInstance();
@@ -36,11 +33,7 @@ class ReportesService {
       'libros_leidos': librosLeidos,
       'libros_activos': prestamos.length,
       'reservas_activas': reservas.length,
-      'favoritos': favoritos.length,
-      'biblioteca': biblioteca.length,
-      'dias_lectura': librosLeidos * 7, // Estimado
-      'genero_favorito': 'Programación',
-      'racha_dias': 7, // Días consecutivos leyendo (mock)
+      'historial': historial.length,
     };
   }
 
@@ -81,16 +74,91 @@ class ReportesService {
   /// Estadísticas de lectura por categoría
   /// GET /api/reportes/usuario/por-categoria
   static Future<List<Map<String, dynamic>>> getEstadisticasPorCategoria() async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    
     // TODO: Reemplazar con llamada al backend
     
-    return [
-      {'categoria': 'Programación', 'cantidad': 8, 'porcentaje': 40},
-      {'categoria': 'Ficción', 'cantidad': 5, 'porcentaje': 25},
-      {'categoria': 'Ciencia', 'cantidad': 4, 'porcentaje': 20},
-      {'categoria': 'Historia', 'cantidad': 3, 'porcentaje': 15},
-    ];
+    // Obtener historial de préstamos (libros devueltos/leídos)
+    final prefs = await SharedPreferences.getInstance();
+    final prestamosJson = prefs.getString('prestamos_locales');
+    
+    if (prestamosJson == null) {
+      return [];
+    }
+    
+    final List<dynamic> decoded = json.decode(prestamosJson);
+    
+    // Filtrar solo préstamos devueltos (historial)
+    final historial = decoded.where((p) => p['estado'] == 'devuelto').toList();
+    
+    if (historial.isEmpty) {
+      return [];
+    }
+    
+    final Map<String, int> categorias = {};
+    
+    // Contar libros por categoría basado en el historial
+    for (var prestamo in historial) {
+      // Obtener categoría del libro (si existe)
+      String categoria = 'Otros';
+      
+      final titulo = (prestamo['titulo'] ?? '').toString().toLowerCase();
+      final autor = (prestamo['autor'] ?? '').toString().toLowerCase();
+      
+      // Clasificar por palabras clave
+      if (titulo.contains('program') || titulo.contains('code') || 
+          titulo.contains('java') || titulo.contains('python') ||
+          titulo.contains('flutter') || titulo.contains('dart') ||
+          titulo.contains('javascript') || titulo.contains('react')) {
+        categoria = 'Programación';
+      } else if (titulo.contains('ficción') || titulo.contains('fiction') || 
+                 titulo.contains('novel') || titulo.contains('cuento') ||
+                 titulo.contains('fantasy') || titulo.contains('romance')) {
+        categoria = 'Ficción';
+      } else if (titulo.contains('ciencia') || titulo.contains('science') || 
+                 titulo.contains('física') || titulo.contains('química') ||
+                 titulo.contains('biology') || titulo.contains('physics')) {
+        categoria = 'Ciencia';
+      } else if (titulo.contains('historia') || titulo.contains('history') || 
+                 autor.contains('historian') || titulo.contains('historical')) {
+        categoria = 'Historia';
+      } else if (titulo.contains('biografía') || titulo.contains('biography') ||
+                 titulo.contains('memoir')) {
+        categoria = 'Biografía';
+      } else if (titulo.contains('arte') || titulo.contains('art') ||
+                 titulo.contains('design') || titulo.contains('music')) {
+        categoria = 'Arte';
+      } else if (titulo.contains('filosofía') || titulo.contains('philosophy')) {
+        categoria = 'Filosofía';
+      } else if (titulo.contains('business') || titulo.contains('negocio') ||
+                 titulo.contains('marketing') || titulo.contains('management')) {
+        categoria = 'Negocios';
+      } else if (titulo.contains('salud') || titulo.contains('health') ||
+                 titulo.contains('medicina') || titulo.contains('medical')) {
+        categoria = 'Salud';
+      } else if (titulo.contains('cocina') || titulo.contains('cooking') ||
+                 titulo.contains('recipe')) {
+        categoria = 'Cocina';
+      }
+      
+      categorias[categoria] = (categorias[categoria] ?? 0) + 1;
+    }
+    
+    // Convertir a lista y calcular porcentajes
+    final total = historial.length;
+    final List<Map<String, dynamic>> resultado = [];
+    
+    categorias.forEach((categoria, cantidad) {
+      resultado.add({
+        'categoria': categoria,
+        'cantidad': cantidad,
+        'porcentaje': total > 0 ? ((cantidad / total) * 100).round() : 0,
+      });
+    });
+    
+    // Ordenar por cantidad descendente
+    resultado.sort((a, b) => (b['cantidad'] as int).compareTo(a['cantidad'] as int));
+    
+    // Limitar a máximo 5 categorías
+    return resultado.take(5).toList();
   }
 
   // ========== REPORTES ADMINISTRATIVOS ==========

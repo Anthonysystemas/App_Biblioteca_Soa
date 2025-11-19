@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'screens/splash_screen.dart';
 import 'services/notification_service.dart';
+import 'services/expiration_checker_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -11,6 +12,9 @@ void main() async {
   } catch (e) {
     debugPrint('Notificaciones no disponibles en esta plataforma: $e');
   }
+  
+  // Inicializar verificación automática de expiración/vencimiento
+  await ExpirationCheckerService().initialize();
   
   runApp(const BibliotecaApp());
 }

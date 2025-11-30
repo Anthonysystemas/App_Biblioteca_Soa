@@ -25,11 +25,10 @@ class CircleItem extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        // CORRECCIÓN: Ancho fijo para consistencia
         width: circleSize,
         margin: EdgeInsets.only(right: spacing),
         child: Column(
-          mainAxisSize: MainAxisSize.min, // IMPORTANTE: Tamaño mínimo
+          mainAxisSize: MainAxisSize.min,
           children: [
             Container(
               width: circleSize,
@@ -82,10 +81,9 @@ class CircleItem extends StatelessWidget {
             ),
             SizedBox(height: circleSize * 0.12),
             
-            // CORRECCIÓN PRINCIPAL: Control del texto
             SizedBox(
               width: circleSize,
-              height: labelFontSize * 2.2, // Altura fija para máximo 2 líneas
+              height: labelFontSize * 2.2,
               child: Text(
                 label,
                 textAlign: TextAlign.center,
@@ -93,10 +91,10 @@ class CircleItem extends StatelessWidget {
                   color: const Color(0xFF374151),
                   fontSize: labelFontSize,
                   fontWeight: FontWeight.w500,
-                  height: 1.1, // Altura de línea ajustada
+                  height: 1.1,
                 ),
-                maxLines: 2, // IMPORTANTE: Máximo 2 líneas
-                overflow: TextOverflow.ellipsis, // IMPORTANTE: Manejo de overflow
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],

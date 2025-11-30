@@ -5,12 +5,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:path_provider/path_provider.dart';
 
-/// Modelo de libro digital
 class DigitalBook {
   final String libroId;
   final String titulo;
   final String filePath;
-  final String fileType; // 'pdf', 'epub', 'txt'
+  final String fileType;
   final DateTime addedDate;
 
   DigitalBook({
@@ -42,11 +41,9 @@ class DigitalBook {
   }
 }
 
-/// Servicio para gestionar libros digitales (PDF, EPUB)
 class DigitalBooksService {
   static const String _digitalBooksKey = 'digital_books';
 
-  /// Obtener todos los libros digitales almacenados
   static Future<List<DigitalBook>> getDigitalBooks() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -62,7 +59,6 @@ class DigitalBooksService {
     }
   }
 
-  /// Verificar si un libro tiene archivo digital asociado
   static Future<DigitalBook?> getDigitalBookByLibroId(String libroId) async {
     try {
       final books = await getDigitalBooks();
@@ -75,7 +71,6 @@ class DigitalBooksService {
     }
   }
 
-  /// Seleccionar un archivo PDF/EPUB desde el dispositivo
   static Future<String?> pickDigitalBook() async {
     try {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
@@ -95,21 +90,18 @@ class DigitalBooksService {
     }
   }
 
-  /// Asociar un archivo digital con un libro
   static Future<bool> addDigitalBook({
     required String libroId,
     required String titulo,
     required String filePath,
   }) async {
     try {
-      // Verificar que el archivo existe
       final file = File(filePath);
       if (!await file.exists()) {
         debugPrint('El archivo no existe: $filePath');
         return false;
       }
 
-      // Determinar tipo de archivo
       String fileType = 'pdf';
       if (filePath.toLowerCase().endsWith('.epub')) {
         fileType = 'epub';
@@ -126,10 +118,8 @@ class DigitalBooksService {
         books = decoded.cast<Map<String, dynamic>>();
       }
 
-      // Verificar si ya existe
       final exists = books.any((b) => b['libroId'] == libroId);
       if (exists) {
-        // Actualizar la ruta del archivo
         for (var i = 0; i < books.length; i++) {
           if (books[i]['libroId'] == libroId) {
             books[i]['filePath'] = filePath;
@@ -138,7 +128,6 @@ class DigitalBooksService {
           }
         }
       } else {
-        // Agregar nuevo
         final newBook = DigitalBook(
           libroId: libroId,
           titulo: titulo,
@@ -157,7 +146,6 @@ class DigitalBooksService {
     }
   }
 
-  /// Eliminar libro digital
   static Future<bool> removeDigitalBook(String libroId) async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -178,7 +166,6 @@ class DigitalBooksService {
     }
   }
 
-  /// Copiar archivo a almacenamiento local de la app
   static Future<String?> copyFileToAppStorage(String sourcePath, String libroId) async {
     try {
       final directory = await getApplicationDocumentsDirectory();
@@ -201,17 +188,12 @@ class DigitalBooksService {
     }
   }
 
-  /// Crear un PDF de demostración para pruebas
   static Future<String?> createSamplePDF(String libroId, String titulo) async {
     try {
-      // Por ahora, solo devuelve una URL de ejemplo
-      // En producción, aquí descargarías el PDF del servidor
       debugPrint('Creando PDF de demostración para $titulo');
 
-      // Simular descarga
       await Future.delayed(const Duration(seconds: 1));
 
-      // Retornar path de ejemplo (en producción sería el archivo descargado)
       return 'sample';
     } catch (e) {
       debugPrint('Error al crear PDF de demostración: $e');
@@ -219,10 +201,9 @@ class DigitalBooksService {
     }
   }
 
-  /// Verificar si el archivo existe
   static Future<bool> fileExists(String filePath) async {
     try {
-      if (filePath == 'sample') return true; // Archivo de demostración
+      if (filePath == 'sample') return true;
       final file = File(filePath);
       return await file.exists();
     } catch (e) {
@@ -230,7 +211,6 @@ class DigitalBooksService {
     }
   }
 
-  /// Limpiar todos los libros digitales (desarrollo)
   static Future<void> clearAll() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_digitalBooksKey);

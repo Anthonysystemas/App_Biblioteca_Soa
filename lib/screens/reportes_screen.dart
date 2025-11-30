@@ -1,4 +1,3 @@
-// Archivo: screens/reportes_screen.dart
 import 'package:flutter/material.dart';
 import '../services/reportes_service.dart';
 
@@ -61,15 +60,12 @@ class _ReportesScreenState extends State<ReportesScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Tarjeta de resumen general
                     _buildResumenCard(),
                     const SizedBox(height: 20),
                     
-                    // Estadísticas detalladas
                     _buildEstadisticasGrid(),
                     const SizedBox(height: 20),
                     
-                    // Gráfico de categorías
                     if (_estadisticasCategorias != null && _estadisticasCategorias!.isNotEmpty) ...[
                       const Text(
                         'Lectura por Categoría',
@@ -84,7 +80,6 @@ class _ReportesScreenState extends State<ReportesScreen> {
                       const SizedBox(height: 20),
                     ],
                     
-                    // Botones de acción
                     _buildAccionesButtons(),
                   ],
                 ),
@@ -352,7 +347,6 @@ class _ReportesScreenState extends State<ReportesScreen> {
           width: double.infinity,
           child: OutlinedButton.icon(
             onPressed: () {
-              // TODO: Implementar exportar PDF
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Exportar PDF - Próximamente con backend'),
@@ -377,7 +371,6 @@ class _ReportesScreenState extends State<ReportesScreen> {
           width: double.infinity,
           child: OutlinedButton.icon(
             onPressed: () {
-              // TODO: Implementar exportar CSV
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Exportar CSV - Próximamente con backend'),

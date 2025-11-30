@@ -9,7 +9,6 @@ import '../../services/open_library_api_service.dart';
 import '../../services/ejemplares_digitales_service.dart';
 import '../../services/prestamos_service.dart';
 
-/// Modal de detalles completo del libro con acciones
 class BookDetailModal extends StatefulWidget {
   final BookModel book;
 
@@ -22,11 +21,9 @@ class BookDetailModal extends StatefulWidget {
 class _BookDetailModalState extends State<BookDetailModal> {
   int? _stockDisponible;
 
-  // Disponibilidad digital
   DisponibilidadDigital? _disponibilidadDigital;
   bool _cargandoDigital = true;
 
-  // Lista de espera
   bool _estaEnListaEspera = false;
   int? _posicionEnLista;
   int _cantidadEnEspera = 0;
@@ -34,7 +31,6 @@ class _BookDetailModalState extends State<BookDetailModal> {
   @override
   void initState() {
     super.initState();
-    // Guardar como visto recientemente cuando se abre el modal
     RecentlyViewedService.addBook(widget.book);
     _cargarStock();
     _cargarDisponibilidadDigital();
@@ -327,16 +323,16 @@ class _BookDetailModalState extends State<BookDetailModal> {
   Widget _buildActionButtons() {
     final bool hayStock = _stockDisponible != null && _stockDisponible! > 0;
     final bool hayDigital = _disponibilidadDigital != null && _disponibilidadDigital!.disponible;
+    final bool todosEnUso = _disponibilidadDigital != null && 
+                            _disponibilidadDigital!.ejemplaresTotales > 0 && 
+                            !_disponibilidadDigital!.disponible;
 
     return Column(
       children: [
-        // DISPONIBILIDAD DIGITAL
         _buildDisponibilidadDigital(),
         const SizedBox(height: 16),
 
-        // Botones principales: PRÉSTAMO DIGITAL / LISTA DE ESPERA
         if (!_cargandoDigital) ...[
-          // Caso 1: HAY DISPONIBLES - Botón de préstamo
           if (hayDigital) ...[
             SizedBox(
               width: double.infinity,
@@ -369,9 +365,7 @@ class _BookDetailModalState extends State<BookDetailModal> {
               ),
             ),
           ]
-          // Caso 2: NO HAY DISPONIBLES - Botones de lista de espera
           else ...[
-            // Si ya está en lista de espera
             if (_estaEnListaEspera) ...[
               Container(
                 padding: const EdgeInsets.all(16),
@@ -440,7 +434,6 @@ class _BookDetailModalState extends State<BookDetailModal> {
                 ),
               ),
             ]
-            // Si NO está en lista de espera
             else ...[
               SizedBox(
                 width: double.infinity,
@@ -482,31 +475,36 @@ class _BookDetailModalState extends State<BookDetailModal> {
         const Divider(),
         const SizedBox(height: 8),
 
-        // Botón principal: LEER AHORA (préstamo digital inmediato)
         SizedBox(
           width: double.infinity,
           child: ElevatedButton.icon(
-            onPressed: hayStock ? () => _solicitarPrestamo() : null,
+            onPressed: (hayStock && hayDigital) ? () => _solicitarPrestamo() : null,
             style: ElevatedButton.styleFrom(
-              backgroundColor: hayStock ? const Color(0xFF10B981) : Colors.grey,
+              backgroundColor: (hayStock && hayDigital) ? const Color(0xFF10B981) : Colors.grey,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 16),
-              elevation: hayStock ? 4 : 0,
+              elevation: (hayStock && hayDigital) ? 4 : 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
             icon: const Icon(Icons.auto_stories, size: 22),
             label: Text(
-              hayStock ? 'Leer Ahora (14 días)' : 'No Disponible',
+              (hayStock && hayDigital) 
+                  ? 'Leer Ahora (14 días)' 
+                  : todosEnUso 
+                      ? 'Todos los ejemplares en uso' 
+                      : 'No Disponible',
               style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
             ),
           ),
         ),
-        if (!hayStock) ...[
+        if (!hayStock || todosEnUso) ...[
           const SizedBox(height: 8),
           Text(
-            'No hay licencias disponibles. Puedes reservar y te notificaremos cuando esté disponible.',
+            todosEnUso
+                ? 'Todos los ${_disponibilidadDigital?.ejemplaresTotales ?? 0} ejemplar${(_disponibilidadDigital?.ejemplaresTotales ?? 0) == 1 ? '' : 'es'} están en uso. Puedes unirte a la lista de espera y te notificaremos cuando esté disponible.'
+                : 'No hay licencias disponibles. Puedes unirte a la lista de espera y te notificaremos cuando esté disponible.',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 11,
@@ -515,7 +513,6 @@ class _BookDetailModalState extends State<BookDetailModal> {
             ),
           ),
           const SizedBox(height: 12),
-          // Botón para reservar cuando no hay stock
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
@@ -528,9 +525,9 @@ class _BookDetailModalState extends State<BookDetailModal> {
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              icon: const Icon(Icons.bookmark_add, size: 18),
+              icon: const Icon(Icons.hourglass_empty, size: 18),
               label: const Text(
-                'Reservar y Esperar',
+                'Lista de Espera',
                 style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
               ),
             ),
@@ -538,17 +535,42 @@ class _BookDetailModalState extends State<BookDetailModal> {
         ],
 
         const SizedBox(height: 12),
-        // Vista previa - Solo si hay préstamo activo
         SizedBox(
           width: double.infinity,
           child: OutlinedButton.icon(
             onPressed: () async {
-              // Verificar si el libro está en préstamos activos
-              final prestamoActivo = await PrestamosService.tienePrestamo(widget.book.id);
+              final prestamos = await PrestamosService.getPrestamosActivos();
+              final prestamoLibro = prestamos.where((p) => p.libroId == widget.book.id).firstOrNull;
               
               if (!mounted) return;
               
-              if (prestamoActivo) {
+              if (prestamoLibro != null) {
+                if (prestamoLibro.estado != 'activo' && prestamoLibro.estado != 'renovado') {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        prestamoLibro.estado == 'devuelto'
+                          ? '❌ Este préstamo ya fue devuelto. No puedes leer este libro.'
+                          : '❌ Este préstamo ha vencido. No puedes leer este libro.',
+                      ),
+                      backgroundColor: Colors.red,
+                      duration: const Duration(seconds: 4),
+                    ),
+                  );
+                  return;
+                }
+
+                if (prestamoLibro.isVencido) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('⏰ Este préstamo ha vencido. Ya no puedes leer este libro.'),
+                      backgroundColor: Colors.orange,
+                      duration: Duration(seconds: 4),
+                    ),
+                  );
+                  return;
+                }
+
                 Navigator.pop(context);
                 Navigator.push(
                   context,
@@ -557,7 +579,6 @@ class _BookDetailModalState extends State<BookDetailModal> {
                   ),
                 );
               } else {
-                // Mostrar mensaje de que necesita tener el libro prestado
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text('Debes tener este libro en préstamo activo para leerlo'),
@@ -716,9 +737,7 @@ class _BookDetailModalState extends State<BookDetailModal> {
     );
   }
 
-  /// Prestar ejemplar digital (FLUJO PRINCIPAL para préstamo digital)
   Future<void> _prestarDigital() async {
-    // Verificar si ya tiene un préstamo activo de este libro
     final tieneActivo = await EjemplaresDigitalesService.tienePrestamoActivo(widget.book.id);
 
     if (!mounted) return;
@@ -734,7 +753,6 @@ class _BookDetailModalState extends State<BookDetailModal> {
       return;
     }
 
-    // Mostrar diálogo de confirmación con detalles del préstamo digital
     final confirmar = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -756,7 +774,6 @@ class _BookDetailModalState extends State<BookDetailModal> {
               ),
               const SizedBox(height: 16),
 
-              // Información del préstamo digital
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -792,7 +809,6 @@ class _BookDetailModalState extends State<BookDetailModal> {
 
               const SizedBox(height: 16),
 
-              // Disponibilidad actual
               if (_disponibilidadDigital != null)
                 Container(
                   padding: const EdgeInsets.all(12),
@@ -851,7 +867,6 @@ class _BookDetailModalState extends State<BookDetailModal> {
 
     if (confirmar != true || !mounted) return;
 
-    // Mostrar loading
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -860,25 +875,20 @@ class _BookDetailModalState extends State<BookDetailModal> {
       ),
     );
 
-    // Intentar prestar el ejemplar
     final prestado = await EjemplaresDigitalesService.prestarEjemplar(widget.book.id);
 
     if (!mounted) return;
-    Navigator.pop(context); // Cerrar loading
+    Navigator.pop(context);
 
     if (prestado) {
-      // Generar ID único para el préstamo
       final prestamoId = '${widget.book.id}_${DateTime.now().millisecondsSinceEpoch}';
 
-      // Registrar préstamo activo
       await EjemplaresDigitalesService.registrarPrestamoActivo(widget.book.id, prestamoId);
 
-      // Recargar disponibilidad digital para actualizar la UI
       await _cargarDisponibilidadDigital();
 
       if (!mounted) return;
 
-      // Mostrar éxito con opción de leer ahora
       final leerAhora = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
@@ -946,14 +956,11 @@ class _BookDetailModalState extends State<BookDetailModal> {
       );
 
       if (leerAhora == true && mounted) {
-        // Cerrar el modal de detalles del libro
         Navigator.pop(context);
 
-        // Intentar descargar y abrir el libro real
         await _descargarYAbrirLibro();
       }
     } else {
-      // Error al prestar
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -965,7 +972,6 @@ class _BookDetailModalState extends State<BookDetailModal> {
     }
   }
 
-  /// Unirse a la lista de espera
   Future<void> _unirseAListaEspera() async {
     final confirmar = await showDialog<bool>(
       context: context,
@@ -1051,7 +1057,6 @@ class _BookDetailModalState extends State<BookDetailModal> {
 
     if (confirmar != true || !mounted) return;
 
-    // Mostrar loading
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -1067,10 +1072,10 @@ class _BookDetailModalState extends State<BookDetailModal> {
     );
 
     if (!mounted) return;
-    Navigator.pop(context); // Cerrar loading
+    Navigator.pop(context);
 
     if (unido) {
-      await _cargarDisponibilidadDigital(); // Recargar datos
+      await _cargarDisponibilidadDigital();
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -1094,7 +1099,6 @@ class _BookDetailModalState extends State<BookDetailModal> {
     }
   }
 
-  /// Salir de la lista de espera
   Future<void> _salirDeListaEspera() async {
     final confirmar = await showDialog<bool>(
       context: context,
@@ -1132,7 +1136,7 @@ class _BookDetailModalState extends State<BookDetailModal> {
     final salido = await EjemplaresDigitalesService.salirDeListaEspera(widget.book.id);
 
     if (salido && mounted) {
-      await _cargarDisponibilidadDigital(); // Recargar datos
+      await _cargarDisponibilidadDigital();
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -1145,15 +1149,15 @@ class _BookDetailModalState extends State<BookDetailModal> {
     }
   }
 
-  /// Solicitar préstamo inmediato (biblioteca digital)
   Future<void> _solicitarPrestamo() async {
-    // Verificar stock disponible
     final stockDisponible = await StockService.getStockDisponible(widget.book.id);
+    final disponibilidadDigital = await EjemplaresDigitalesService.consultarDisponibilidad(widget.book.id);
 
     if (!mounted) return;
 
-    // Si no hay stock, mostrar diálogo y ofrecer reservar
-    if (stockDisponible == 0) {
+    final todosEnUso = disponibilidadDigital.ejemplaresTotales > 0 && !disponibilidadDigital.disponible;
+    
+    if (stockDisponible == 0 || todosEnUso) {
       final reservar = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
@@ -1169,7 +1173,9 @@ class _BookDetailModalState extends State<BookDetailModal> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Lo sentimos, todas las licencias digitales de "${widget.book.title}" están en uso en este momento.',
+                disponibilidadDigital.ejemplaresTotales > 0
+                    ? 'El libro "${widget.book.title}" tiene ${disponibilidadDigital.ejemplaresTotales} ejemplar${disponibilidadDigital.ejemplaresTotales == 1 ? '' : 'es'}, pero todos están en uso en este momento.'
+                    : 'Lo sentimos, todas las licencias digitales de "${widget.book.title}" están en uso en este momento.',
                 style: const TextStyle(fontSize: 13),
               ),
               const SizedBox(height: 16),
@@ -1185,10 +1191,10 @@ class _BookDetailModalState extends State<BookDetailModal> {
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.lightbulb_outline, color: Colors.blue[700], size: 18),
+                        Icon(Icons.hourglass_empty, color: Colors.blue[700], size: 18),
                         const SizedBox(width: 6),
                         Text(
-                          '¿Quieres reservarlo?',
+                          '¿Quieres unirte a la lista de espera?',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 13,
@@ -1199,7 +1205,7 @@ class _BookDetailModalState extends State<BookDetailModal> {
                     ),
                     const SizedBox(height: 8),
                     const Text(
-                      'Puedes reservar este libro y te notificaremos cuando una licencia esté disponible.',
+                      'Puedes unirte a la lista de espera y te notificaremos cuando una licencia esté disponible.',
                       style: TextStyle(fontSize: 11),
                     ),
                   ],
@@ -1218,8 +1224,8 @@ class _BookDetailModalState extends State<BookDetailModal> {
                 backgroundColor: const Color(0xFF667EEA),
                 foregroundColor: Colors.white,
               ),
-              icon: const Icon(Icons.bookmark_add, size: 18),
-              label: const Text('Reservar'),
+              icon: const Icon(Icons.hourglass_empty, size: 18),
+              label: const Text('Lista de Espera'),
             ),
           ],
         ),
@@ -1231,7 +1237,6 @@ class _BookDetailModalState extends State<BookDetailModal> {
       return;
     }
 
-    // Si hay stock, confirmar préstamo digital
     final confirmar = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -1312,11 +1317,9 @@ class _BookDetailModalState extends State<BookDetailModal> {
     );
 
     if (confirmar == true && mounted) {
-      // Obtener referencias antes de operaciones asíncronas
       final navigator = Navigator.of(context);
       final scaffoldMessenger = ScaffoldMessenger.of(context);
       
-      // Mostrar loading
       showDialog(
         context: context,
         barrierDismissible: false,
@@ -1325,7 +1328,6 @@ class _BookDetailModalState extends State<BookDetailModal> {
         ),
       );
 
-      // Crear préstamo
       bool success = false;
       String? errorType;
       
@@ -1356,20 +1358,16 @@ class _BookDetailModalState extends State<BookDetailModal> {
       }
 
       if (mounted) {
-        navigator.pop(); // Cerrar loading
+        navigator.pop();
 
         if (success) {
-          // Actualizar stock (-1)
           await StockService.actualizarStockLocal(widget.book.id, -1);
           
-          // Recargar stock en el modal
           await _cargarStock();
         }
 
-        // Mostrar resultado
         if (!context.mounted) return;
         
-        // Determinar mensaje según el tipo de error
         String errorMessage;
         if (errorType == 'LIMITE_PRESTAMOS') {
           errorMessage = '⚠️ Límite Alcanzado\n\nYa tienes 5 préstamos activos (máximo permitido).\n\n💡 Devuelve un libro para solicitar uno nuevo.';
@@ -1406,15 +1404,13 @@ class _BookDetailModalState extends State<BookDetailModal> {
         );
 
         if (success) {
-          navigator.pop(); // Cerrar modal
+          navigator.pop();
         }
       }
     }
   }
 
-  /// Reservar el libro (SOLO cuando NO hay stock disponible)
   Future<void> _reservarLibro() async {
-    // Primero verificar disponibilidad
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -1427,17 +1423,16 @@ class _BookDetailModalState extends State<BookDetailModal> {
 
     if (!mounted) return;
 
-    Navigator.pop(context); // Cerrar loading
+    Navigator.pop(context);
 
-    // Mostrar información de disponibilidad y proceso de notificación
     final confirmar = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: Row(
           children: [
-            Icon(Icons.bookmark_add, color: const Color(0xFF667EEA)),
+            Icon(Icons.hourglass_empty, color: const Color(0xFF667EEA)),
             const SizedBox(width: 8),
-            const Expanded(child: Text('Reservar Libro Digital')),
+            const Expanded(child: Text('Lista de Espera')),
           ],
         ),
         content: SingleChildScrollView(
@@ -1446,12 +1441,11 @@ class _BookDetailModalState extends State<BookDetailModal> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '¿Deseas reservar "${widget.book.title}"?',
+                '¿Deseas unirte a la lista de espera de "${widget.book.title}"?',
                 style: const TextStyle(fontWeight: FontWeight.w500),
               ),
               const SizedBox(height: 16),
               
-              // Proceso de notificación digital
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -1467,7 +1461,7 @@ class _BookDetailModalState extends State<BookDetailModal> {
                         Icon(Icons.info_outline, color: Colors.blue[700], size: 18),
                         const SizedBox(width: 6),
                         Text(
-                          'Sistema de reservas:',
+                          'Sistema de lista de espera:',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 13,
@@ -1495,7 +1489,6 @@ class _BookDetailModalState extends State<BookDetailModal> {
               
               const SizedBox(height: 16),
               
-              // Disponibilidad
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -1544,19 +1537,17 @@ class _BookDetailModalState extends State<BookDetailModal> {
               backgroundColor: const Color(0xFF667EEA),
               foregroundColor: Colors.white,
             ),
-            icon: const Icon(Icons.bookmark_add, size: 18),
-            label: const Text('Confirmar Reserva'),
+            icon: const Icon(Icons.hourglass_empty, size: 18),
+            label: const Text('Unirse a Lista de Espera'),
           ),
         ],
       ),
     );
 
     if (confirmar == true && mounted) {
-      // Obtener referencias antes de operaciones asíncronas
       final navigator = Navigator.of(context);
       final scaffoldMessenger = ScaffoldMessenger.of(context);
       
-      // Mostrar loading
       showDialog(
         context: context,
         barrierDismissible: false,
@@ -1565,7 +1556,6 @@ class _BookDetailModalState extends State<BookDetailModal> {
         ),
       );
 
-      // Llamar al servicio con datos del libro
       bool success = false;
       String? errorTypeReserva;
       
@@ -1596,20 +1586,16 @@ class _BookDetailModalState extends State<BookDetailModal> {
       }
 
       if (mounted) {
-        navigator.pop(); // Cerrar loading
+        navigator.pop();
 
         if (success) {
-          // Actualizar stock (-1)
           await StockService.actualizarStockLocal(widget.book.id, -1);
           
-          // Recargar stock en el modal
           await _cargarStock();
         }
 
-        // Mostrar resultado
         if (!context.mounted) return;
         
-        // Determinar mensaje según el tipo de error
         String errorMessageReserva;
         if (errorTypeReserva == 'LIMITE_RESERVAS') {
           errorMessageReserva = '⚠️ Límite Alcanzado\n\nYa tienes 3 libros en lista de espera (máximo permitido).\n\n💡 Cancela una reserva para agregar otro libro.';
@@ -1634,7 +1620,6 @@ class _BookDetailModalState extends State<BookDetailModal> {
               label: 'Lista de Espera',
               textColor: Colors.white,
               onPressed: () {
-                // Navegar al perfil y abrir Mis Reservas
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -1647,17 +1632,58 @@ class _BookDetailModalState extends State<BookDetailModal> {
         );
 
         if (success) {
-          navigator.pop(); // Cerrar modal
+          navigator.pop();
         }
       }
     }
   }
 
-  /// Descargar y abrir el libro real desde Internet Archive
   Future<void> _descargarYAbrirLibro() async {
-    // En lugar de descargar, abrimos directamente el visor web de Google Books
     try {
-      // Navegar directamente al BookReaderScreen con WebView
+      final prestamos = await PrestamosService.getPrestamosActivos();
+      final prestamoLibro = prestamos.where((p) => p.libroId == widget.book.id).firstOrNull;
+      
+      if (prestamoLibro == null) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Debes tener este libro en préstamo activo para leerlo'),
+            backgroundColor: Colors.orange,
+            duration: Duration(seconds: 3),
+          ),
+        );
+        return;
+      }
+
+      if (prestamoLibro.estado != 'activo' && prestamoLibro.estado != 'renovado') {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              prestamoLibro.estado == 'devuelto'
+                ? '❌ Este préstamo ya fue devuelto. No puedes leer este libro.'
+                : '❌ Este préstamo ha vencido. No puedes leer este libro.',
+            ),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+        return;
+      }
+
+      if (prestamoLibro.isVencido) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('⏰ Este préstamo ha vencido. Ya no puedes leer este libro.'),
+            backgroundColor: Colors.orange,
+            duration: Duration(seconds: 4),
+          ),
+        );
+        return;
+      }
+
+      if (!mounted) return;
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -1665,7 +1691,6 @@ class _BookDetailModalState extends State<BookDetailModal> {
         ),
       );
     } catch (e) {
-      // Error al abrir el lector
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -1678,7 +1703,6 @@ class _BookDetailModalState extends State<BookDetailModal> {
     }
   }
 
-  /// Helper para construir pasos del proceso
   Widget _buildStep(String numero, String texto) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 4),

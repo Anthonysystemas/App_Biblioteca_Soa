@@ -3,7 +3,6 @@ import '../services/ejemplares_digitales_service.dart';
 import '../widgets/book/book_detail_modal.dart';
 import '../models/book_model.dart';
 
-/// Pantalla de notificaciones de disponibilidad
 class NotificacionesDisponibilidadScreen extends StatefulWidget {
   const NotificacionesDisponibilidadScreen({super.key});
 
@@ -288,16 +287,13 @@ class _NotificacionesDisponibilidadScreenState extends State<NotificacionesDispo
   }
 
   Future<void> _abrirLibro(Map<String, dynamic> notif) async {
-    // Marcar como leída
     await EjemplaresDigitalesService.marcarNotificacionComoLeida(notif['id']);
-    await _cargarNotificaciones(); // Recargar lista
+    await _cargarNotificaciones();
 
-    // Crear BookModel básico con la información disponible
     final libroId = notif['libroId'];
     final titulo = notif['titulo'] ?? 'Libro sin título';
     final autor = notif['autor'] ?? 'Autor desconocido';
 
-    // Crear un BookModel simplificado
     final book = BookModel(
       id: libroId,
       title: titulo,
@@ -316,7 +312,6 @@ class _NotificacionesDisponibilidadScreenState extends State<NotificacionesDispo
 
     if (!mounted) return;
 
-    // Abrir modal de detalles del libro
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,

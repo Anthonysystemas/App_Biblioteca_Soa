@@ -1,14 +1,12 @@
-// Archivo: services/in_app_notification_service.dart
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
 
-/// Modelo de Notificación In-App
 class InAppNotification {
   final String id;
   final String titulo;
   final String mensaje;
-  final String tipo; // 'prestamo', 'reserva', 'devolucion', 'disponible'
+  final String tipo;
   final DateTime fecha;
   final bool leida;
   final String? libroId;
@@ -60,14 +58,12 @@ class InAppNotification {
   }
 }
 
-/// Servicio de Notificaciones In-App
 class InAppNotificationService {
   static const String _notificationsKey = 'in_app_notifications';
   static final InAppNotificationService _instance = InAppNotificationService._internal();
   factory InAppNotificationService() => _instance;
   InAppNotificationService._internal();
 
-  // Listeners para actualizar la UI
   final List<VoidCallback> _listeners = [];
 
   void addListener(VoidCallback listener) {
@@ -84,7 +80,6 @@ class InAppNotificationService {
     }
   }
 
-  /// Agregar notificación de préstamo exitoso
   Future<void> addPrestamoNotification(String libroTitulo, DateTime fechaDevolucion) async {
     final notification = InAppNotification(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -99,7 +94,6 @@ class InAppNotificationService {
     _notifyListeners();
   }
 
-  /// Agregar notificación de reserva exitosa
   Future<void> addReservaNotification(String libroTitulo) async {
     final notification = InAppNotification(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -114,7 +108,6 @@ class InAppNotificationService {
     _notifyListeners();
   }
 
-  /// Agregar notificación de reserva cancelada
   Future<void> addReservaCanceladaNotification(String libroTitulo) async {
     final notification = InAppNotification(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -129,7 +122,6 @@ class InAppNotificationService {
     _notifyListeners();
   }
 
-  /// Agregar notificación de libro disponible
   Future<void> addLibroDisponibleNotification(String libroTitulo, String libroId) async {
     final notification = InAppNotification(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -145,7 +137,6 @@ class InAppNotificationService {
     _notifyListeners();
   }
 
-  /// Agregar notificación de devolución próxima
   Future<void> addDevolucionProximaNotification(String libroTitulo, int diasRestantes) async {
     final emoji = diasRestantes == 0 ? '⚠️' : '⏰';
     final mensaje = diasRestantes == 0
@@ -167,7 +158,6 @@ class InAppNotificationService {
     _notifyListeners();
   }
 
-  /// Agregar notificación genérica
   Future<void> addNotification(String titulo, String mensaje, String tipo) async {
     final notification = InAppNotification(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -182,7 +172,6 @@ class InAppNotificationService {
     _notifyListeners();
   }
 
-  /// Obtener todas las notificaciones
   Future<List<InAppNotification>> getAll() async {
     final prefs = await SharedPreferences.getInstance();
     final notificationsJson = prefs.getString(_notificationsKey);
@@ -194,25 +183,21 @@ class InAppNotificationService {
         .map((json) => InAppNotification.fromJson(json))
         .toList();
     
-    // Ordenar por fecha (más recientes primero)
     notifications.sort((a, b) => b.fecha.compareTo(a.fecha));
     
     return notifications;
   }
 
-  /// Obtener notificaciones no leídas
   Future<List<InAppNotification>> getUnread() async {
     final all = await getAll();
     return all.where((n) => !n.leida).toList();
   }
 
-  /// Contar notificaciones no leídas
   Future<int> getUnreadCount() async {
     final unread = await getUnread();
     return unread.length;
   }
 
-  /// Marcar notificación como leída
   Future<void> markAsRead(String notificationId) async {
     final notifications = await getAll();
     final index = notifications.indexWhere((n) => n.id == notificationId);
@@ -224,7 +209,6 @@ class InAppNotificationService {
     }
   }
 
-  /// Marcar todas como leídas
   Future<void> markAllAsRead() async {
     final notifications = await getAll();
     final updated = notifications.map((n) => n.copyWith(leida: true)).toList();
@@ -232,7 +216,6 @@ class InAppNotificationService {
     _notifyListeners();
   }
 
-  /// Eliminar notificación
   Future<void> delete(String notificationId) async {
     final notifications = await getAll();
     notifications.removeWhere((n) => n.id == notificationId);
@@ -240,19 +223,16 @@ class InAppNotificationService {
     _notifyListeners();
   }
 
-  /// Eliminar todas las notificaciones
   Future<void> deleteAll() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_notificationsKey);
     _notifyListeners();
   }
 
-  // Métodos privados
   Future<void> _saveNotification(InAppNotification notification) async {
     final notifications = await getAll();
     notifications.insert(0, notification);
     
-    // Mantener máximo 50 notificaciones
     if (notifications.length > 50) {
       notifications.removeRange(50, notifications.length);
     }

@@ -6,14 +6,12 @@ import 'services/expiration_checker_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Inicializar notificaciones (puede fallar en Windows, es opcional)
   try {
     await NotificationService().initialize();
   } catch (e) {
     debugPrint('Notificaciones no disponibles en esta plataforma: $e');
   }
   
-  // Inicializar verificación automática de expiración/vencimiento
   await ExpirationCheckerService().initialize();
   
   runApp(const BibliotecaApp());

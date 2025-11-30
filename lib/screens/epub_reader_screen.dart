@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:epub_view/epub_view.dart';
 
-/// Pantalla para leer libros en formato EPUB
 class EpubReaderScreen extends StatefulWidget {
   final String filePath;
   final String bookTitle;
@@ -37,7 +36,6 @@ class _EpubReaderScreenState extends State<EpubReaderScreen> {
         _error = null;
       });
 
-      // Verificar que el archivo existe
       final file = File(widget.filePath);
       if (!await file.exists()) {
         setState(() {
@@ -47,7 +45,6 @@ class _EpubReaderScreenState extends State<EpubReaderScreen> {
         return;
       }
 
-      // Cargar EPUB desde archivo
       _epubController = EpubController(
         document: EpubDocument.openFile(file),
       );
@@ -87,14 +84,12 @@ class _EpubReaderScreenState extends State<EpubReaderScreen> {
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
-          // Botón de índice/capítulos
           if (!_isLoading && _error == null)
             IconButton(
               icon: const Icon(Icons.list),
               onPressed: () => _showChaptersDialog(),
               tooltip: 'Índice',
             ),
-          // Botón de ajustes de lectura
           if (!_isLoading && _error == null)
             IconButton(
               icon: const Icon(Icons.settings),
@@ -188,7 +183,6 @@ class _EpubReaderScreenState extends State<EpubReaderScreen> {
     );
   }
 
-  /// Mostrar diálogo con índice de capítulos
   void _showChaptersDialog() {
     showDialog(
       context: context,
@@ -244,7 +238,6 @@ class _EpubReaderScreenState extends State<EpubReaderScreen> {
                       style: const TextStyle(fontSize: 14),
                     ),
                     onTap: () {
-                      // Navegar al capítulo usando scrollToElement
                       _epubController.scrollTo(index: index);
                       Navigator.pop(context);
                     },
@@ -264,7 +257,6 @@ class _EpubReaderScreenState extends State<EpubReaderScreen> {
     );
   }
 
-  /// Mostrar diálogo con configuración de lectura
   void _showSettingsDialog() {
     showDialog(
       context: context,

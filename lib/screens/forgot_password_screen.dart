@@ -20,7 +20,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   }
 
   Future<void> _handleResetPassword() async {
-    // Validar email
     if (_emailController.text.trim().isEmpty) {
       setState(() {
         _errorMessage = 'Por favor ingresa tu email o usuario';
@@ -35,8 +34,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       _successMessage = null;
     });
 
-    // TODO: Aquí iría la llamada al backend para enviar email de recuperación
-    await Future.delayed(const Duration(seconds: 2)); // Simulación
+    await Future.delayed(const Duration(seconds: 2));
 
     setState(() {
       _isLoading = false;
@@ -55,8 +53,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Color(0xFF0D47A1), // Azul marino oscuro
-              Color(0xFF1976D2), // Azul vibrante
+              Color(0xFF0D47A1),
+              Color(0xFF1976D2),
             ],
           ),
         ),
@@ -67,7 +65,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 children: [
                   const SizedBox(height: 40),
                   
-                  // Botón de regresar
                   Align(
                     alignment: Alignment.centerLeft,
                     child: IconButton(
@@ -79,7 +76,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
                   const SizedBox(height: 20),
 
-                  // Ícono de candado
                   Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
@@ -95,7 +91,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
                   const SizedBox(height: 24),
 
-                  // Título
                   const Text(
                     '¿Olvidaste tu contraseña?',
                     style: TextStyle(
@@ -108,7 +103,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
                   const SizedBox(height: 12),
 
-                  // Descripción
                   Text(
                     'No te preocupes, ingresa tu email o usuario\ny te enviaremos instrucciones para recuperarla',
                     style: TextStyle(
@@ -121,7 +115,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
                   const SizedBox(height: 40),
 
-                  // Formulario
                   Container(
                     padding: const EdgeInsets.all(30),
                     decoration: BoxDecoration(
@@ -138,7 +131,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Label Email
                         const Text(
                           'Email o Usuario',
                           style: TextStyle(
@@ -149,7 +141,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         ),
                         const SizedBox(height: 8),
 
-                        // Campo Email
                         TextField(
                           controller: _emailController,
                           keyboardType: TextInputType.emailAddress,
@@ -189,7 +180,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
                         const SizedBox(height: 24),
 
-                        // Mensaje de error
                         if (_errorMessage != null)
                           Container(
                             padding: const EdgeInsets.all(12),
@@ -216,7 +206,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             ),
                           ),
 
-                        // Mensaje de éxito
                         if (_successMessage != null)
                           Container(
                             padding: const EdgeInsets.all(12),
@@ -243,14 +232,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             ),
                           ),
 
-                        // Botón Enviar
                         SizedBox(
                           width: double.infinity,
                           height: 50,
                           child: ElevatedButton(
                             onPressed: _isLoading ? null : _handleResetPassword,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF1976D2), // Azul vibrante
+                              backgroundColor: const Color(0xFF1976D2),
                               foregroundColor: Colors.white,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -279,7 +267,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
                         const SizedBox(height: 16),
 
-                        // Botón Volver al login
                         SizedBox(
                           width: double.infinity,
                           child: TextButton.icon(
@@ -287,7 +274,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             icon: const Icon(Icons.arrow_back, size: 18),
                             label: const Text('Volver al inicio de sesión'),
                             style: TextButton.styleFrom(
-                              foregroundColor: const Color(0xFF2196F3), // Azul claro
+                              foregroundColor: const Color(0xFF2196F3),
                             ),
                           ),
                         ),

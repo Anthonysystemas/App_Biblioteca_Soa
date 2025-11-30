@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
 
-/// Modelo de Stock
 class StockItem {
   final String libroId;
   final int cantidad;
@@ -31,30 +30,22 @@ class StockItem {
   }
 }
 
-/// Servicio de Stock (MOCK - Datos temporales)
-/// TODO: En el futuro, este servicio se conectará con el backend real
 class StockService {
-  // TODO: Reemplazar con tu URL del backend cuando esté listo
-  // static const String baseUrl = 'https://tu-api.com/api/stock';
   
   static const String _stockKey = 'libros_stock';
 
-  /// TODO: GET /api/stock/{libroId}
-  /// Por ahora usa datos temporales en SharedPreferences
   static Future<int> getStockDisponible(String libroId) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final stockJson = prefs.getString(_stockKey);
       
       if (stockJson == null) {
-        // Inicializar con stock por defecto para todos los libros
         return _getStockPorDefecto(libroId);
       }
       
       final List<dynamic> decoded = json.decode(stockJson);
       final stocks = decoded.map((json) => StockItem.fromJson(json)).toList();
       
-      // Buscar el stock del libro
       final stockItem = stocks.firstWhere(
         (s) => s.libroId == libroId,
         orElse: () => StockItem(
@@ -71,9 +62,6 @@ class StockService {
     }
   }
 
-  /// TODO: PUT /api/stock/{libroId}
-  /// Actualiza el stock localmente (suma o resta)
-  /// cambio: puede ser negativo (-1 al prestar) o positivo (+1 al devolver)
   static Future<bool> actualizarStockLocal(String libroId, int cambio) async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -85,19 +73,16 @@ class StockService {
         stocks = decoded.map((json) => StockItem.fromJson(json)).toList();
       }
       
-      // Buscar el índice del libro
       final index = stocks.indexWhere((s) => s.libroId == libroId);
       
       if (index != -1) {
-        // Actualizar stock existente
         final nuevoStock = stocks[index].cantidad + cambio;
         stocks[index] = StockItem(
           libroId: libroId,
-          cantidad: nuevoStock >= 0 ? nuevoStock : 0, // No permitir stock negativo
+          cantidad: nuevoStock >= 0 ? nuevoStock : 0,
           ultimaActualizacion: DateTime.now(),
         );
       } else {
-        // Crear nuevo registro de stock
         final stockInicial = _getStockPorDefecto(libroId);
         final nuevoStock = stockInicial + cambio;
         stocks.add(StockItem(
@@ -107,7 +92,6 @@ class StockService {
         ));
       }
       
-      // Guardar
       await prefs.setString(_stockKey, json.encode(stocks.map((s) => s.toJson()).toList()));
       return true;
     } catch (e) {
@@ -116,14 +100,11 @@ class StockService {
     }
   }
 
-  /// TODO: GET /api/stock/{libroId}/disponible
-  /// Verifica si hay stock disponible
   static Future<bool> verificarDisponibilidad(String libroId) async {
     final stock = await getStockDisponible(libroId);
     return stock > 0;
   }
 
-  /// Obtiene información detallada del stock
   static Future<Map<String, dynamic>> getStockInfo(String libroId) async {
     final stock = await getStockDisponible(libroId);
     final disponible = stock > 0;
@@ -146,24 +127,25 @@ class StockService {
     };
   }
 
-  /// Stock por defecto para libros nuevos (MOCK)
-  /// TODO: Eliminar cuando se conecte con backend
   static int _getStockPorDefecto(String libroId) {
-    // Generar stock aleatorio entre 0 y 10 basado en el hash del ID
-    // Esto hace que cada libro tenga siempre el mismo stock inicial
     final hash = libroId.hashCode.abs();
-    return (hash % 11); // 0 a 10 unidades
+    final modulo = hash % 20;
+    
+    if (modulo < 6) {
+      return 0;
+    } else if (modulo < 10) {
+      return 1 + (modulo % 2);
+    } else {
+      return 3 + (modulo % 8);
+    }
   }
 
-  /// Limpia datos locales (solo para desarrollo)
   static Future<void> clearLocal() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_stockKey);
   }
 
-  /// Inicializa stock para un libro si no existe
   static Future<void> inicializarStock(String libroId, {int cantidad = 5}) async {
-    // Si ya existe un registro, no hacer nada
     final prefs = await SharedPreferences.getInstance();
     final stockJson = prefs.getString(_stockKey);
     
@@ -175,11 +157,9 @@ class StockService {
       if (existe) return;
     }
     
-    // Crear nuevo registro
     await actualizarStockLocal(libroId, cantidad - _getStockPorDefecto(libroId));
   }
 
-  /// Establece stock específico para testing (fuerza un valor exacto)
   static Future<void> setStockManual(String libroId, int cantidad) async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -191,18 +171,15 @@ class StockService {
         stocks = decoded.map((json) => StockItem.fromJson(json)).toList();
       }
       
-      // Buscar el índice del libro
       final index = stocks.indexWhere((s) => s.libroId == libroId);
       
       if (index != -1) {
-        // Actualizar stock existente
         stocks[index] = StockItem(
           libroId: libroId,
           cantidad: cantidad >= 0 ? cantidad : 0,
           ultimaActualizacion: DateTime.now(),
         );
       } else {
-        // Crear nuevo registro de stock
         stocks.add(StockItem(
           libroId: libroId,
           cantidad: cantidad >= 0 ? cantidad : 0,
@@ -210,7 +187,6 @@ class StockService {
         ));
       }
       
-      // Guardar
       await prefs.setString(_stockKey, json.encode(stocks.map((s) => s.toJson()).toList()));
       debugPrint('📦 Stock actualizado manualmente para $libroId: $cantidad unidades');
     } catch (e) {
@@ -218,15 +194,13 @@ class StockService {
     }
   }
 
-  /// Configura libros de prueba con stock = 0 para testing de lista de espera
   static Future<void> configurarLibrosParaPruebas() async {
-    // Estos son algunos IDs de Google Books populares
     final librosConStockCero = [
-      'nggnmAEACAAJ',  // "1984" de George Orwell
-      'wrOQLV6xB-wC',  // "The Great Gatsby"
-      '_ojXNuzgHRcC',  // "Pride and Prejudice"
-      'yxv1LK5gyAYC',  // "Harry Potter and the Sorcerer's Stone"
-      'yl4dILkcqm4C',  // "The Hunger Games"
+      'nggnmAEACAAJ',
+      'wrOQLV6xB-wC',
+      '_ojXNuzgHRcC',
+      'yxv1LK5gyAYC',
+      'yl4dILkcqm4C',
     ];
 
     for (final libroId in librosConStockCero) {

@@ -1,7 +1,8 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../widgets/bottom_nav.dart';
 import '../services/prestamos_service.dart';
-import '../services/reservas_service.dart';
+import '../services/ejemplares_digitales_service.dart';
 import '../models/book_model.dart';
 import '../services/google_books_api_service.dart';
 import 'book_reader_screen.dart';
@@ -23,7 +24,7 @@ class MisLibrosScreen extends StatefulWidget {
 class _MisLibrosScreenState extends State<MisLibrosScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   List<Prestamo> _prestamos = [];
-  List<Reserva> _reservas = [];
+  List<Map<String, dynamic>> _listaEspera = [];
   List<Prestamo> _historial = [];
   bool _isLoading = true;
 
@@ -44,14 +45,16 @@ class _MisLibrosScreenState extends State<MisLibrosScreen> with SingleTickerProv
     setState(() => _isLoading = true);
 
     try {
+      await PrestamosService.verificarPrestamosVencidos();
+      
       final prestamos = await PrestamosService.getPrestamosActivos();
-      final reservas = await ReservasService.getReservasActivas();
+      final listaEspera = await EjemplaresDigitalesService.obtenerListaEsperaUsuario();
       final historial = await PrestamosService.getHistorial();
 
       if (mounted) {
         setState(() {
           _prestamos = prestamos;
-          _reservas = reservas;
+          _listaEspera = listaEspera;
           _historial = historial;
           _isLoading = false;
         });
@@ -99,7 +102,7 @@ class _MisLibrosScreenState extends State<MisLibrosScreen> with SingleTickerProv
             ),
             Tab(
               icon: const Icon(Icons.bookmark),
-              text: 'Lista de Espera (${_reservas.length})',
+              text: 'Lista de Espera (${_listaEspera.length})',
             ),
             Tab(
               icon: const Icon(Icons.history),
@@ -123,7 +126,6 @@ class _MisLibrosScreenState extends State<MisLibrosScreen> with SingleTickerProv
     );
   }
 
-  // TAB 1: PRÉSTAMOS
   Widget _buildPrestamosTab() {
     if (_isLoading) {
       return const Center(
@@ -154,7 +156,6 @@ class _MisLibrosScreenState extends State<MisLibrosScreen> with SingleTickerProv
     );
   }
 
-  // TAB 2: LISTA DE ESPERA
   Widget _buildReservasTab() {
     if (_isLoading) {
       return const Center(
@@ -164,7 +165,7 @@ class _MisLibrosScreenState extends State<MisLibrosScreen> with SingleTickerProv
       );
     }
 
-    if (_reservas.isEmpty) {
+    if (_listaEspera.isEmpty) {
       return _buildEmptyState(
         icon: Icons.bookmark_outline,
         title: 'No tienes libros en lista de espera',
@@ -177,15 +178,14 @@ class _MisLibrosScreenState extends State<MisLibrosScreen> with SingleTickerProv
       color: const Color(0xFF667EEA),
       child: ListView.builder(
         padding: const EdgeInsets.all(20),
-        itemCount: _reservas.length,
+        itemCount: _listaEspera.length,
         itemBuilder: (context, index) {
-          return _buildReservaCard(_reservas[index]);
+          return _buildListaEsperaCard(_listaEspera[index]);
         },
       ),
     );
   }
 
-  // TAB 3: HISTORIAL
   Widget _buildHistorialTab() {
     if (_isLoading) {
       return const Center(
@@ -287,7 +287,6 @@ class _MisLibrosScreenState extends State<MisLibrosScreen> with SingleTickerProv
           children: [
             Row(
               children: [
-                // Portada
                 Container(
                   width: 60,
                   height: 90,
@@ -457,18 +456,19 @@ class _MisLibrosScreenState extends State<MisLibrosScreen> with SingleTickerProv
     );
   }
 
-  Widget _buildReservaCard(Reserva reserva) {
-    final estaLista = reserva.estado == 'lista';
-    final estaPendiente = reserva.estado == 'pendiente';
+  Widget _buildListaEsperaCard(Map<String, dynamic> item) {
+    final libroId = item['libroId'] as String;
+    final titulo = item['titulo'] as String;
+    final autor = item['autor'] as String;
+    final posicion = item['posicion'] as int;
+    final totalEnEspera = item['totalEnEspera'] as int;
+    final fechaUnion = DateTime.parse(item['fechaUnion'] as String);
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       elevation: 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: estaLista
-            ? const BorderSide(color: Colors.green, width: 2)
-            : BorderSide.none,
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -484,18 +484,7 @@ class _MisLibrosScreenState extends State<MisLibrosScreen> with SingleTickerProv
                     borderRadius: BorderRadius.circular(8),
                     color: Colors.grey[300],
                   ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: reserva.thumbnail != null
-                        ? Image.network(
-                            reserva.thumbnail!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return const Icon(Icons.book, size: 30);
-                            },
-                          )
-                        : const Icon(Icons.book, size: 30),
-                  ),
+                  child: const Icon(Icons.book, size: 30),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -503,7 +492,7 @@ class _MisLibrosScreenState extends State<MisLibrosScreen> with SingleTickerProv
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        reserva.titulo,
+                        titulo,
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -514,7 +503,7 @@ class _MisLibrosScreenState extends State<MisLibrosScreen> with SingleTickerProv
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        reserva.autor,
+                        autor,
                         style: TextStyle(fontSize: 13, color: Colors.grey[600]),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -529,10 +518,10 @@ class _MisLibrosScreenState extends State<MisLibrosScreen> with SingleTickerProv
             const SizedBox(height: 12),
             Row(
               children: [
-                Icon(Icons.bookmark, size: 16, color: Colors.grey[600]),
+                Icon(Icons.access_time, size: 16, color: Colors.grey[600]),
                 const SizedBox(width: 6),
                 Text(
-                  'Reservado: ${_formatDate(reserva.fechaReserva)}',
+                  'En lista desde: ${_formatDate(fechaUnion)}',
                   style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                 ),
               ],
@@ -541,21 +530,19 @@ class _MisLibrosScreenState extends State<MisLibrosScreen> with SingleTickerProv
             Row(
               children: [
                 Icon(
-                  estaLista ? Icons.check_circle : Icons.hourglass_empty,
+                  Icons.hourglass_empty,
                   size: 16,
-                  color: estaLista ? Colors.green : Colors.orange,
+                  color: Colors.orange,
                 ),
                 const SizedBox(width: 6),
-                Text(
-                  estaLista
-                      ? '¡Listo para recoger!'
-                      : estaPendiente
-                          ? 'En espera - Posición ${reserva.posicionCola} en cola'
-                          : 'Estado: ${reserva.estado}',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: estaLista ? Colors.green : Colors.orange,
-                    fontWeight: estaLista ? FontWeight.bold : FontWeight.normal,
+                Expanded(
+                  child: Text(
+                    'Posición $posicion de $totalEnEspera en la lista de espera',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Colors.orange,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ],
@@ -564,9 +551,9 @@ class _MisLibrosScreenState extends State<MisLibrosScreen> with SingleTickerProv
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: () => _cancelarReserva(reserva),
+                onPressed: () => _salirDeListaEspera(libroId, titulo),
                 icon: const Icon(Icons.cancel, size: 16),
-                label: const Text('Cancelar Reserva', style: TextStyle(fontSize: 12)),
+                label: const Text('Salir de Lista de Espera', style: TextStyle(fontSize: 12)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red,
                   foregroundColor: Colors.white,
@@ -691,7 +678,32 @@ class _MisLibrosScreenState extends State<MisLibrosScreen> with SingleTickerProv
   }
 
   Future<void> _leerLibro(Prestamo prestamo) async {
-    // Mostrar loading mientras obtenemos la información completa
+    if (prestamo.estado != 'activo' && prestamo.estado != 'renovado') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            prestamo.estado == 'devuelto' 
+              ? '❌ Este préstamo ya fue devuelto. No puedes leer este libro.'
+              : '❌ Este préstamo ha vencido. No puedes leer este libro.',
+          ),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 4),
+        ),
+      );
+      return;
+    }
+
+    if (prestamo.isVencido) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('⏰ Este préstamo ha vencido. Ya no puedes leer este libro.'),
+          backgroundColor: Colors.orange,
+          duration: Duration(seconds: 4),
+        ),
+      );
+      return;
+    }
+
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -701,10 +713,8 @@ class _MisLibrosScreenState extends State<MisLibrosScreen> with SingleTickerProv
     );
 
     try {
-      // Intentar obtener información completa del libro desde Google Books API
       BookModel? bookModel = await GoogleBooksApiService.getBookById(prestamo.libroId);
 
-      // Si no se encuentra, crear uno básico con los datos del préstamo
       bookModel ??= BookModel(
         id: prestamo.libroId,
         title: prestamo.titulo,
@@ -721,11 +731,9 @@ class _MisLibrosScreenState extends State<MisLibrosScreen> with SingleTickerProv
         language: 'es',
       );
 
-      // Cerrar loading
       if (mounted) {
         Navigator.pop(context);
 
-        // Navegar a BookReaderScreen (WebView)
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -734,11 +742,9 @@ class _MisLibrosScreenState extends State<MisLibrosScreen> with SingleTickerProv
         );
       }
     } catch (e) {
-      // Cerrar loading
       if (mounted) {
         Navigator.pop(context);
 
-        // Mostrar error
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error al cargar el libro: $e'),
@@ -770,7 +776,6 @@ class _MisLibrosScreenState extends State<MisLibrosScreen> with SingleTickerProv
     );
 
     if (confirmar == true && mounted) {
-      // Llamar al servicio para devolver el libro
       final success = await PrestamosService.devolverLibro(prestamo.id);
       
       if (mounted) {
@@ -786,18 +791,18 @@ class _MisLibrosScreenState extends State<MisLibrosScreen> with SingleTickerProv
         );
         
         if (success) {
-          _loadData(); // Recargar la lista
+          _loadData();
         }
       }
     }
   }
 
-  Future<void> _cancelarReserva(Reserva reserva) async {
+  Future<void> _salirDeListaEspera(String libroId, String titulo) async {
     final confirmar = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Cancelar Reserva'),
-        content: Text('¿Estás seguro de que quieres cancelar la reserva de "${reserva.titulo}"?'),
+        title: const Text('Salir de Lista de Espera'),
+        content: Text('¿Estás seguro de que quieres salir de la lista de espera de "$titulo"?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -806,20 +811,31 @@ class _MisLibrosScreenState extends State<MisLibrosScreen> with SingleTickerProv
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Sí, cancelar'),
+            child: const Text('Sí, salir'),
           ),
         ],
       ),
     );
 
     if (confirmar == true && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Reserva cancelada'),
-          backgroundColor: Colors.orange,
-        ),
-      );
-      _loadData();
+      final success = await EjemplaresDigitalesService.salirDeListaEspera(libroId);
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              success
+                  ? 'Has salido de la lista de espera'
+                  : 'Error al salir de la lista de espera',
+            ),
+            backgroundColor: success ? Colors.green : Colors.red,
+          ),
+        );
+        
+        if (success) {
+          _loadData();
+        }
+      }
     }
   }
 }

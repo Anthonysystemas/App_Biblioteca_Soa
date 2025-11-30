@@ -1,4 +1,3 @@
-// Archivo: services/notification_service.dart
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter/foundation.dart';
 
@@ -32,7 +31,6 @@ class NotificationService {
       );
       _initialized = true;
       
-      // Solicitar permisos en Android 13+
       await _requestPermissions();
     } catch (e) {
       debugPrint('Error inicializando notificaciones: $e');
@@ -61,10 +59,8 @@ class NotificationService {
 
   void _onNotificationTap(NotificationResponse response) {
     debugPrint('Notificación tocada: ${response.payload}');
-    // Aquí puedes navegar a una pantalla específica
   }
 
-  // Notificación cuando un libro está disponible
   Future<void> notifyBookAvailable(String bookTitle) async {
     try {
       const androidDetails = AndroidNotificationDetails(
@@ -99,7 +95,6 @@ class NotificationService {
     }
   }
 
-  // Notificación cuando se acerca la fecha de devolución
   Future<void> notifyReturnDue(String bookTitle, int daysLeft) async {
     try {
       const androidDetails = AndroidNotificationDetails(
@@ -140,7 +135,6 @@ class NotificationService {
     }
   }
 
-  // Notificación cuando una reserva está lista
   Future<void> notifyReservationReady(String bookTitle) async {
     try {
       const androidDetails = AndroidNotificationDetails(
@@ -175,7 +169,6 @@ class NotificationService {
     }
   }
 
-  // Notificación de préstamo exitoso
   Future<void> notifyLoanSuccess(String bookTitle, DateTime dueDate) async {
     try {
       const androidDetails = AndroidNotificationDetails(
@@ -212,12 +205,10 @@ class NotificationService {
     }
   }
 
-  // Cancelar todas las notificaciones
   Future<void> cancelAll() async {
     await _notifications.cancelAll();
   }
 
-  // Cancelar una notificación específica
   Future<void> cancel(int id) async {
     await _notifications.cancel(id);
   }

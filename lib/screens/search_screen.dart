@@ -58,7 +58,6 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   void _loadRecentSearches() {
-    // Búsquedas recientes simuladas
     _recentSearches = [
       'Programación',
       'Literatura',
@@ -97,7 +96,6 @@ class _SearchScreenState extends State<SearchScreen> {
       return;
     }
 
-    // Debounce de 800ms
     _debounceTimer = Timer(const Duration(milliseconds: 800), () {
       if (_searchController.text.trim() == query && query.isNotEmpty) {
         _performSearch(query);
@@ -394,7 +392,7 @@ class _SearchScreenState extends State<SearchScreen> {
               crossAxisCount: 2,
               crossAxisSpacing: 16,
               mainAxisSpacing: 16,
-              childAspectRatio: 0.75, // Proporción corregida
+              childAspectRatio: 0.75,
             ),
             itemCount: _searchResults.length,
             itemBuilder: (context, index) {
@@ -402,7 +400,6 @@ class _SearchScreenState extends State<SearchScreen> {
               return BookCard.fromBookModel(
                 book,
                 onTap: () {
-                  // Acción al tocar la tarjeta del libro
                 },
               );
             },

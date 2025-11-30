@@ -1,4 +1,4 @@
-// Data-only model. No Flutter UI dependencies.
+
 
 class BookModel {
   final String id;
@@ -17,7 +17,6 @@ class BookModel {
   final String? previewLink;
   final String? infoLink;
   
-  // PROPIEDAD MUTABLE para biblioteca - CORREGIDA
   String readingStatus;
 
   BookModel({
@@ -39,7 +38,7 @@ class BookModel {
     String? readingStatus,
   }) : readingStatus = readingStatus ?? 'pendiente';
 
-  // GETTER Y SETTER para readingStatus
+
 
   factory BookModel.fromJson(Map<String, dynamic> json) {
     final volumeInfo = json['volumeInfo'] ?? {};
@@ -69,7 +68,7 @@ class BookModel {
     );
   }
 
-  // MÉTODO TOJSON REQUERIDO
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -92,7 +91,7 @@ class BookModel {
     };
   }
 
-  // Compatibilidad con código existente
+
   String? get author => authors.isNotEmpty ? authors.first : null;
 
   void updateReadingStatus(String newStatus) {

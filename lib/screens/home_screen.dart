@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../widgets/search_bar.dart';
 import '../widgets/top_section.dart';
 import '../widgets/categories_section.dart';
@@ -24,13 +25,10 @@ class _HomeScreenState extends State<HomeScreen> {
       _selectedIndex = index;
     });
 
-    // Navegar según el índice
     switch (index) {
       case 0:
-        // Inicio - ya estamos aquí
         break;
       case 1:
-        // Buscar
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (context) => SearchScreen(
@@ -45,7 +43,6 @@ class _HomeScreenState extends State<HomeScreen> {
         });
         break;
       case 2:
-        // Mis Libros (Préstamos, Reservas, Historial)
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (context) => MisLibrosScreen(
@@ -60,7 +57,6 @@ class _HomeScreenState extends State<HomeScreen> {
         });
         break;
       case 3:
-        // Perfil
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (context) => const ProfileScreen(),
@@ -95,17 +91,19 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF7F8FC),
       body: SafeArea(
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          child: Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: horizontalPadding, 
-              vertical: verticalSpacing
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Fila: Barra de búsqueda + Notificación
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: horizontalPadding, 
+                    vertical: verticalSpacing
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                 Row(
                   children: [
                     Expanded(
@@ -122,25 +120,24 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 SizedBox(height: verticalSpacing * 1.5),
                 
-                // Sección superior con saludo y libro destacado
                 const TopSection(),
                 SizedBox(height: verticalSpacing * 2),
                 
-                // Sección de categorías con íconos circulares
                 CategoriesSection(
                   currentNavIndex: _selectedIndex,
                   onNavTap: _onBottomNavTap,
                 ),
                 SizedBox(height: verticalSpacing * 2),
                 
-                // Sección de libros más leídos con API (con íconos de favorito)
                 const LibrosMasLeidosSection(),
                 
-                // Espaciado inferior para el BottomNav
                 const SizedBox(height: 20),
-              ],
+                    ],
+                  ),
+                ),
+              ),
             ),
-          ),
+          ],
         ),
       ),
       bottomNavigationBar: BottomNav(

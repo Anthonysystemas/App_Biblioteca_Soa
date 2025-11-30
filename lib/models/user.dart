@@ -2,14 +2,15 @@ class User {
   final String id;
   final String name;
   final String email;
-  final String? profileImage; // Ruta local o URL de la foto de perfil
+  final String? profileImage;
   final String? phone;
   final String? address;
   final DateTime? birthDate;
-  final String? carnetNumber; // Número de carnet/identificación
-  final String userType; // 'estudiante', 'profesor', 'publico'
+  final String? carnetNumber;
+  final String? universidad;
+  final String userType;
   final DateTime registrationDate;
-  final String membershipLevel; // 'basico', 'premium', 'vip'
+  final String membershipLevel;
   final bool isActive;
   
   User({
@@ -21,6 +22,7 @@ class User {
     this.address,
     this.birthDate,
     this.carnetNumber,
+    this.universidad,
     this.userType = 'publico',
     DateTime? registrationDate,
     this.membershipLevel = 'basico',
@@ -39,6 +41,7 @@ class User {
           ? DateTime.parse(json['birthDate']) 
           : null,
       carnetNumber: json['carnetNumber'],
+      universidad: json['universidad'],
       userType: json['userType'] ?? 'publico',
       registrationDate: json['registrationDate'] != null
           ? DateTime.parse(json['registrationDate'])
@@ -58,6 +61,7 @@ class User {
       'address': address,
       'birthDate': birthDate?.toIso8601String(),
       'carnetNumber': carnetNumber,
+      'universidad': universidad,
       'userType': userType,
       'registrationDate': registrationDate.toIso8601String(),
       'membershipLevel': membershipLevel,
@@ -65,7 +69,7 @@ class User {
     };
   }
   
-  // Método para crear copia con cambios
+
   User copyWith({
     String? id,
     String? name,
@@ -75,6 +79,7 @@ class User {
     String? address,
     DateTime? birthDate,
     String? carnetNumber,
+    String? universidad,
     String? userType,
     DateTime? registrationDate,
     String? membershipLevel,
@@ -89,6 +94,7 @@ class User {
       address: address ?? this.address,
       birthDate: birthDate ?? this.birthDate,
       carnetNumber: carnetNumber ?? this.carnetNumber,
+      universidad: universidad ?? this.universidad,
       userType: userType ?? this.userType,
       registrationDate: registrationDate ?? this.registrationDate,
       membershipLevel: membershipLevel ?? this.membershipLevel,
@@ -96,7 +102,7 @@ class User {
     );
   }
   
-  // Calcular edad
+
   int? get age {
     if (birthDate == null) return null;
     final now = DateTime.now();
@@ -108,7 +114,7 @@ class User {
     return age;
   }
   
-  // Tiempo como miembro
+
   String get membershipDuration {
     final duration = DateTime.now().difference(registrationDate);
     if (duration.inDays < 30) {

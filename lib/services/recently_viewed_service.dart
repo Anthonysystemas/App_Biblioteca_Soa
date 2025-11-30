@@ -3,12 +3,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
 import '../models/book_model.dart';
 
-/// Servicio para gestionar libros vistos recientemente
 class RecentlyViewedService {
   static const String _recentlyViewedKey = 'recently_viewed_books';
-  static const int maxRecentBooks = 10; // Máximo de libros en el historial
+  static const int maxRecentBooks = 10;
 
-  /// Agregar un libro al historial de vistos recientemente
   static Future<void> addBook(BookModel book) async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -20,7 +18,6 @@ class RecentlyViewedService {
         books = decoded.cast<Map<String, dynamic>>();
       }
 
-      // Crear mapa del libro
       final bookMap = {
         'id': book.id,
         'title': book.title,
@@ -31,25 +28,20 @@ class RecentlyViewedService {
         'timestamp': DateTime.now().toIso8601String(),
       };
 
-      // Eliminar si ya existe (para moverlo al inicio)
       books.removeWhere((b) => b['id'] == book.id);
 
-      // Agregar al inicio
       books.insert(0, bookMap);
 
-      // Limitar a los últimos N libros
       if (books.length > maxRecentBooks) {
         books = books.sublist(0, maxRecentBooks);
       }
 
       await prefs.setString(_recentlyViewedKey, json.encode(books));
     } catch (e) {
-      // Error silencioso, no afecta la experiencia del usuario
       debugPrint('Error al guardar libro visto: $e');
     }
   }
 
-  /// Obtener el último libro visto
   static Future<BookModel?> getLastViewedBook() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -62,7 +54,6 @@ class RecentlyViewedService {
 
       final Map<String, dynamic> lastBook = decoded.first;
 
-      // Construir BookModel desde el mapa
       final authors = (lastBook['authors'] as List<dynamic>?)?.cast<String>() ?? [];
       final categories = (lastBook['categories'] as List<dynamic>?)?.cast<String>() ?? [];
       return BookModel(
@@ -80,7 +71,6 @@ class RecentlyViewedService {
     }
   }
 
-  /// Obtener todos los libros vistos recientemente
   static Future<List<BookModel>> getAllRecentlyViewed() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -109,7 +99,6 @@ class RecentlyViewedService {
     }
   }
 
-  /// Limpiar historial
   static Future<void> clearHistory() async {
     try {
       final prefs = await SharedPreferences.getInstance();

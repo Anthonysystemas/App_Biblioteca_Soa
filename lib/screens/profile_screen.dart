@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import '../services/user_service.dart';
 import '../services/prestamos_service.dart';
-import '../services/reservas_service.dart';
+import '../services/ejemplares_digitales_service.dart';
 import '../services/recently_viewed_service.dart';
 import '../models/user.dart';
 import 'login_screen.dart';
@@ -22,7 +22,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   User? _currentUser;
   bool _isLoading = true;
   int _prestamosCount = 0;
-  int _reservasCount = 0;
+  int _listaEsperaCount = 0;
 
   @override
   void initState() {
@@ -43,12 +43,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _loadContadores() async {
     final prestamos = await PrestamosService.getPrestamosActivos();
-    final reservas = await ReservasService.getReservasActivas();
+    final listaEspera = await EjemplaresDigitalesService.obtenerListaEsperaUsuario();
     
     if (mounted) {
       setState(() {
         _prestamosCount = prestamos.length;
-        _reservasCount = reservas.length;
+        _listaEsperaCount = listaEspera.length;
       });
     }
   }
@@ -91,7 +91,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (result == null || !mounted) return;
 
     if (result == 'remove') {
-      // Eliminar foto de perfil
       final updatedUser = User(
         id: _currentUser?.id ?? '',
         name: _currentUser?.name ?? '',
@@ -111,7 +110,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       return;
     }
 
-    // Seleccionar imagen
     final ImagePicker picker = ImagePicker();
     XFile? image;
 
@@ -133,7 +131,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
 
       if (image != null) {
-        // Guardar la ruta de la imagen
         final updatedUser = User(
           id: _currentUser?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
           name: _currentUser?.name ?? '',
@@ -165,83 +162,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  Future<void> _editProfile() async {
-    final nameController = TextEditingController(text: _currentUser?.name ?? '');
-    final emailController = TextEditingController(text: _currentUser?.email ?? '');
 
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Editar Perfil'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Nombre Completo',
-                  prefixIcon: Icon(Icons.person_outline),
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: emailController,
-                decoration: const InputDecoration(
-                  labelText: 'Correo Electrónico',
-                  prefixIcon: Icon(Icons.email),
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.emailAddress,
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              if (nameController.text.trim().isNotEmpty) {
-                final updatedUser = User(
-                  id: _currentUser?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
-                  name: nameController.text.trim(),
-                  email: emailController.text.trim(),
-                  profileImage: _currentUser?.profileImage,
-                );
-                
-                final navigator = Navigator.of(context);
-                final scaffoldMessenger = ScaffoldMessenger.of(context);
-                
-                await UserService.saveUser(updatedUser);
-                
-                if (!mounted) return;
-                navigator.pop();
-                _loadUser();
-                scaffoldMessenger.showSnackBar(
-                  const SnackBar(
-                    content: Text('Perfil actualizado correctamente'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF667EEA),
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Guardar'),
-          ),
-        ],
-      ),
-    );
-  }
 
   void _showMisPrestamos() async {
-    // Cargar préstamos desde el servicio
     final prestamos = await PrestamosService.getPrestamosActivos();
     
     if (!mounted) return;
@@ -325,13 +248,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
     
-    // Recargar contadores después de cerrar el modal
     _loadContadores();
   }
 
-  void _showMisReservas() async {
-    // Cargar reservas desde el servicio
-    final reservas = await ReservasService.getReservasActivas();
+  void _showListaEspera() async {
+    final listaEspera = await EjemplaresDigitalesService.obtenerListaEsperaUsuario();
     
     if (!mounted) return;
     
@@ -365,7 +286,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 const SizedBox(height: 20),
                 const Text(
-                  'Mis Reservas',
+                  'Lista de Espera',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -374,7 +295,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 const SizedBox(height: 16),
                 Expanded(
-                  child: reservas.isEmpty
+                  child: listaEspera.isEmpty
                       ? Center(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -382,7 +303,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               Icon(Icons.bookmark_outline, size: 64, color: Colors.grey[400]),
                               const SizedBox(height: 16),
                               Text(
-                                'No tienes reservas activas',
+                                'No tienes libros en lista de espera',
                                 style: TextStyle(color: Colors.grey[600]),
                               ),
                             ],
@@ -390,18 +311,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         )
                       : ListView.builder(
                           controller: scrollController,
-                          itemCount: reservas.length,
+                          itemCount: listaEspera.length,
                           itemBuilder: (context, index) {
-                            final reserva = reservas[index];
+                            final item = listaEspera[index];
                             return Padding(
                               padding: const EdgeInsets.only(bottom: 12),
-                              child: _buildReservaCard(
-                                reservaId: reserva.id,
-                                titulo: reserva.titulo,
-                                autor: reserva.autor,
-                                fechaReserva: _formatDate(reserva.fechaReserva),
-                                disponibleEn: reserva.disponibleEn,
-                                posicionCola: reserva.posicionCola,
+                              child: _buildListaEsperaCard(
+                                libroId: item['libroId'] as String,
+                                titulo: item['titulo'] as String,
+                                autor: item['autor'] as String,
+                                fechaUnion: DateTime.parse(item['fechaUnion'] as String),
+                                posicion: item['posicion'] as int,
+                                totalEnEspera: item['totalEnEspera'] as int,
                               ),
                             );
                           },
@@ -414,12 +335,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
     
-    // Recargar contadores después de cerrar el modal
     _loadContadores();
   }
 
   void _showHistorial() async {
-    // Cargar libros vistos recientemente
     final librosVistos = await RecentlyViewedService.getAllRecentlyViewed();
     
     if (!mounted) return;
@@ -616,10 +535,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (confirmar == true && mounted) {
       final scaffoldMessenger = ScaffoldMessenger.of(context);
       
-      // Limpiar el historial
       await PrestamosService.clearHistorial();
       
-      // Mostrar confirmación
       scaffoldMessenger.showSnackBar(
         const SnackBar(
           content: Row(
@@ -651,7 +568,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       backgroundColor: const Color(0xFFF7F8FC),
       body: CustomScrollView(
         slivers: [
-          // AppBar con gradiente
           SliverAppBar(
             expandedHeight: 200,
             pinned: true,
@@ -673,7 +589,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const SizedBox(height: 24),
-                    // Foto de perfil
                     Stack(
                       children: [
                         Container(
@@ -737,7 +652,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    // Nombre con padding para evitar overflow
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24),
                       child: Text(
@@ -775,14 +689,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
 
-          // Contenido
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Estadísticas
                   Row(
                     children: [
                       Expanded(
@@ -797,7 +709,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Expanded(
                         child: _buildStatCard(
                           icon: Icons.bookmark,
-                          count: '$_reservasCount',
+                          count: '$_listaEsperaCount',
                           label: 'Lista de Espera',
                           color: Colors.orange,
                         ),
@@ -807,7 +719,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                   const SizedBox(height: 24),
 
-                  // Sección de Cuenta
                   const Text(
                     'Cuenta',
                     style: TextStyle(
@@ -823,7 +734,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       icon: Icons.person_outline,
                       title: 'Editar Perfil',
                       subtitle: 'Actualiza tu información personal',
-                      onTap: _editProfile,
+                      onTap: () async {
+                        if (_currentUser != null) {
+                          final result = await showEditProfileModal(context, _currentUser!);
+                          if (result == true) {
+                            _loadUser();
+                          }
+                        }
+                      },
                     ),
                     _buildDivider(),
                     _buildMenuItem(
@@ -840,7 +758,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                   const SizedBox(height: 24),
 
-                  // Sección de Préstamos y Reservas
                   Row(
                     children: [
                       const Text(
@@ -851,7 +768,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           color: Color(0xFF1A202C),
                         ),
                       ),
-                      if (_prestamosCount + _reservasCount > 0) ...[
+                      if (_prestamosCount + _listaEsperaCount > 0) ...[
                         const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -860,7 +777,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
-                            '${_prestamosCount + _reservasCount}',
+                            '${_prestamosCount + _listaEsperaCount}',
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 12,
@@ -910,11 +827,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     _buildDivider(),
                     _buildMenuItem(
                       icon: Icons.bookmark_outline,
-                      title: 'Mis Reservas',
-                      subtitle: _reservasCount == 0
-                          ? 'Sin reservas activas'
-                          : '$_reservasCount ${_reservasCount == 1 ? "libro reservado" : "libros reservados"}',
-                      trailing: _reservasCount > 0
+                      title: 'Lista de Espera',
+                      subtitle: _listaEsperaCount == 0
+                          ? 'Sin libros en lista de espera'
+                          : '$_listaEsperaCount ${_listaEsperaCount == 1 ? "libro en espera" : "libros en espera"}',
+                      trailing: _listaEsperaCount > 0
                           ? Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(
@@ -922,7 +839,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
-                                '$_reservasCount',
+                                '$_listaEsperaCount',
                                 style: const TextStyle(
                                   color: Colors.orange,
                                   fontWeight: FontWeight.bold,
@@ -931,7 +848,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               ),
                             )
                           : null,
-                      onTap: () => _showMisReservas(),
+                      onTap: () => _showListaEspera(),
                     ),
                     _buildDivider(),
                     _buildMenuItem(
@@ -954,28 +871,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         );
                       },
                     ),
-                    _buildDivider(),
-                    _buildMenuItem(
-                      icon: Icons.edit,
-                      title: 'Editar Perfil',
-                      subtitle: 'Actualizar mis datos personales',
-                      onTap: () async {
-                        final result = await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => EditProfileScreen(user: _currentUser!),
-                          ),
-                        );
-                        if (result == true) {
-                          _loadUser(); // Recargar datos del usuario
-                        }
-                      },
-                    ),
                   ]),
 
                   const SizedBox(height: 24),
 
-                  // Botón Limpiar Historial
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton.icon(
@@ -995,7 +894,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                   const SizedBox(height: 12),
 
-                  // Botón Cerrar Sesión
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton.icon(
@@ -1241,7 +1139,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 final navigator = Navigator.of(context);
                 final scaffoldMessenger = ScaffoldMessenger.of(context);
                 
-                // Llamar al servicio para renovar
                 final success = await PrestamosService.renovarPrestamo(prestamoId);
                 
                 if (!context.mounted) return;
@@ -1255,8 +1152,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 );
                 
                 if (success) {
-                  navigator.pop(); // Cerrar modal
-                  _showMisPrestamos(); // Recargar datos
+                  navigator.pop();
+                  _showMisPrestamos();
                 }
               },
               icon: const Icon(Icons.refresh, size: 18),
@@ -1276,20 +1173,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildReservaCard({
-    required String reservaId,
+  Widget _buildListaEsperaCard({
+    required String libroId,
     required String titulo,
     required String autor,
-    required String fechaReserva,
-    required String disponibleEn,
-    required int posicionCola,
+    required DateTime fechaUnion,
+    required int posicion,
+    required int totalEnEspera,
   }) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF667EEA).withValues(alpha: 0.3)),
+        border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -1303,7 +1200,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         children: [
           Row(
             children: [
-              const Icon(Icons.bookmark, color: Color(0xFF667EEA), size: 24),
+              const Icon(Icons.hourglass_empty, color: Colors.orange, size: 24),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -1339,15 +1236,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Reservado: $fechaReserva',
+                      'En lista desde: ${_formatDate(fechaUnion)}',
                       style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                     ),
+                    const SizedBox(height: 4),
                     Text(
-                      'Disponible en: $disponibleEn',
-                      style: const TextStyle(
+                      'Total en espera: $totalEnEspera',
+                      style: TextStyle(
                         fontSize: 12,
-                        color: Color(0xFF667EEA),
-                        fontWeight: FontWeight.w600,
+                        color: Colors.grey[600],
                       ),
                     ),
                   ],
@@ -1356,13 +1253,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF667EEA).withValues(alpha: 0.1),
+                  color: Colors.orange.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  'Posición: $posicionCola',
+                  'Posición: $posicion',
                   style: const TextStyle(
-                    color: Color(0xFF667EEA),
+                    color: Colors.orange,
                     fontWeight: FontWeight.bold,
                     fontSize: 12,
                   ),
@@ -1375,16 +1272,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
             width: double.infinity,
             child: OutlinedButton.icon(
               onPressed: () async {
-                // Obtener referencias antes del showDialog
                 final navigator = Navigator.of(context);
                 final scaffoldMessenger = ScaffoldMessenger.of(context);
                 
-                // Confirmar cancelación
                 final confirmar = await showDialog<bool>(
                   context: context,
                   builder: (context) => AlertDialog(
-                    title: const Text('Cancelar Reserva'),
-                    content: const Text('¿Estás seguro de que deseas cancelar esta reserva?'),
+                    title: const Text('Salir de Lista de Espera'),
+                    content: Text('¿Estás seguro de que deseas salir de la lista de espera de "$titulo"?'),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context, false),
@@ -1396,7 +1291,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           backgroundColor: Colors.red,
                           foregroundColor: Colors.white,
                         ),
-                        child: const Text('Sí, cancelar'),
+                        child: const Text('Sí, salir'),
                       ),
                     ],
                   ),
@@ -1404,26 +1299,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 
                 if (confirmar == true) {
                   if (!context.mounted) return;
-                  final success = await ReservasService.cancelarReserva(reservaId);
+                  final success = await EjemplaresDigitalesService.salirDeListaEspera(libroId);
                   
                   if (!context.mounted) return;
                   scaffoldMessenger.showSnackBar(
                     SnackBar(
                       content: Text(success 
-                        ? 'Reserva cancelada exitosamente' 
-                        : 'Error al cancelar reserva'),
+                        ? 'Has salido de la lista de espera' 
+                        : 'Error al salir de la lista de espera'),
                       backgroundColor: success ? Colors.green : Colors.red,
                     ),
                   );
                   
                   if (success) {
-                    navigator.pop(); // Cerrar modal
-                    _showMisReservas(); // Recargar datos
+                    navigator.pop();
+                    _showListaEspera();
+                    _loadContadores();
                   }
                 }
               },
               icon: const Icon(Icons.close, size: 18),
-              label: const Text('Cancelar Reserva'),
+              label: const Text('Salir de Lista de Espera'),
               style: OutlinedButton.styleFrom(
                 foregroundColor: Colors.red,
                 side: const BorderSide(color: Colors.red),

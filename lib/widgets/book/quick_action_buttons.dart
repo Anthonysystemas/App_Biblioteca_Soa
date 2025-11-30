@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../models/book_model.dart';
 import '../../services/prestamos_service.dart';
-import '../../services/reservas_service.dart';
 import '../../services/stock_service.dart';
+import '../../services/ejemplares_digitales_service.dart';
 import '../../screens/profile_screen.dart';
 
-/// Botones de acción rápida para préstamo y reserva
 class QuickActionButtons extends StatelessWidget {
   final BookModel book;
   final bool compact;
@@ -19,7 +18,6 @@ class QuickActionButtons extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (compact) {
-      // Modo compacto: Botón principal "Leer Ahora" para biblioteca digital
       return SizedBox(
         width: double.infinity,
         child: _buildCompactButton(
@@ -32,7 +30,6 @@ class QuickActionButtons extends StatelessWidget {
       );
     }
 
-    // Modo normal: Botón "Leer Ahora" (préstamo digital inmediato)
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton.icon(
@@ -91,16 +88,16 @@ class QuickActionButtons extends StatelessWidget {
     );
   }
 
-  /// Solicitar préstamo digital (acceso inmediato si hay stock)
   Future<void> _solicitarPrestamo(BuildContext context) async {
-    // Verificar stock disponible
     final stockDisponible = await StockService.getStockDisponible(book.id);
+    final disponibilidadDigital = await EjemplaresDigitalesService.consultarDisponibilidad(book.id);
     
     if (!context.mounted) return;
     
-    // Si NO hay stock, sugerir reservar
-    if (stockDisponible == 0) {
-      final reservar = await showDialog<bool>(
+    final todosEnUso = disponibilidadDigital.ejemplaresTotales > 0 && !disponibilidadDigital.disponible;
+    
+    if (stockDisponible == 0 || todosEnUso) {
+      final unirseListaEspera = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
           title: const Text('Libro No Disponible'),
@@ -115,7 +112,9 @@ class QuickActionButtons extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                'El libro "${book.title}" está siendo leído por otros usuarios.',
+                disponibilidadDigital.ejemplaresTotales > 0
+                    ? 'El libro "${book.title}" tiene ${disponibilidadDigital.ejemplaresTotales} ejemplar${disponibilidadDigital.ejemplaresTotales == 1 ? '' : 'es'}, pero todos están en uso.'
+                    : 'El libro "${book.title}" está siendo leído por otros usuarios.',
                 style: const TextStyle(fontSize: 14),
               ),
               const SizedBox(height: 12),
@@ -131,10 +130,10 @@ class QuickActionButtons extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.bookmark_add, size: 16, color: Colors.orange),
+                        Icon(Icons.hourglass_empty, size: 16, color: Colors.orange),
                         SizedBox(width: 6),
                         Text(
-                          '¿Deseas reservarlo?',
+                          '¿Deseas unirte a la lista de espera?',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 13,
@@ -164,20 +163,19 @@ class QuickActionButtons extends StatelessWidget {
                 backgroundColor: Colors.orange,
                 foregroundColor: Colors.white,
               ),
-              icon: const Icon(Icons.bookmark_add, size: 18),
-              label: const Text('Reservar'),
+              icon: const Icon(Icons.hourglass_empty, size: 18),
+              label: const Text('Lista de Espera'),
             ),
           ],
         ),
       );
       
-      if (reservar == true && context.mounted) {
-        await _reservarLibro(context);
+      if (unirseListaEspera == true && context.mounted) {
+        await _unirseAListaEspera(context);
       }
       return;
     }
     
-    // Si HAY stock, mostrar diálogo de confirmación
     final confirmar = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -321,7 +319,6 @@ class QuickActionButtons extends StatelessWidget {
       if (context.mounted) {
         Navigator.pop(context);
 
-        // Determinar mensaje según el tipo de error
         String errorMessage;
         Color backgroundColor;
         int duration;
@@ -385,9 +382,7 @@ class QuickActionButtons extends StatelessWidget {
     }
   }
 
-  /// Reservar libro (cuando NO hay stock disponible)
-  Future<void> _reservarLibro(BuildContext context) async {
-    // Verificar disponibilidad
+  Future<void> _unirseAListaEspera(BuildContext context) async {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -396,10 +391,11 @@ class QuickActionButtons extends StatelessWidget {
       ),
     );
 
-    final disponibilidad = await ReservasService.verificarDisponibilidad(book.id);
+    final disponibilidad = await EjemplaresDigitalesService.consultarDisponibilidad(book.id);
+    final cantidadEnEspera = await EjemplaresDigitalesService.obtenerCantidadEnEspera(book.id);
 
     if (!context.mounted) return;
-    Navigator.pop(context); // Cerrar loading
+    Navigator.pop(context);
 
     final confirmar = await showDialog<bool>(
       context: context,
@@ -412,11 +408,11 @@ class QuickActionButtons extends StatelessWidget {
                 color: Colors.orange.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(Icons.bookmark_add, color: Colors.orange, size: 24),
+              child: const Icon(Icons.hourglass_empty, color: Colors.orange, size: 24),
             ),
             const SizedBox(width: 12),
             const Expanded(
-              child: Text('Reservar Libro', style: TextStyle(fontSize: 16)),
+              child: Text('Lista de Espera', style: TextStyle(fontSize: 16)),
             ),
           ],
         ),
@@ -473,7 +469,6 @@ class QuickActionButtons extends StatelessWidget {
               
               const SizedBox(height: 12),
               
-              // Disponibilidad
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
@@ -493,9 +488,9 @@ class QuickActionButtons extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 6),
-                    _buildInfoRow('Copias digitales', '${disponibilidad['copiasTotales']}'),
-                    _buildInfoRow('En uso ahora', '${disponibilidad['copiasTotales'] - disponibilidad['copiasDisponibles']}'),
-                    _buildInfoRow('Usuarios en cola', '${disponibilidad['reservasActivas']}'),
+                    _buildInfoRow('Copias digitales', '${disponibilidad.ejemplaresTotales}'),
+                    _buildInfoRow('En uso ahora', '${disponibilidad.ejemplaresEnUso}'),
+                    _buildInfoRow('Usuarios en cola', '$cantidadEnEspera'),
                   ],
                 ),
               ),
@@ -513,8 +508,8 @@ class QuickActionButtons extends StatelessWidget {
               backgroundColor: const Color(0xFF667EEA),
               foregroundColor: Colors.white,
             ),
-            icon: const Icon(Icons.bookmark_add, size: 18),
-            label: const Text('Confirmar'),
+            icon: const Icon(Icons.hourglass_empty, size: 18),
+            label: const Text('Unirse a Lista de Espera'),
           ),
         ],
       ),
@@ -527,11 +522,10 @@ class QuickActionButtons extends StatelessWidget {
         builder: (context) => const Center(child: CircularProgressIndicator()),
       );
 
-      final success = await ReservasService.crearReserva(
+      final success = await EjemplaresDigitalesService.unirseAListaEspera(
         book.id,
         titulo: book.title,
         autor: book.authorsString,
-        thumbnail: book.thumbnail,
       );
 
       if (context.mounted) {
@@ -549,8 +543,8 @@ class QuickActionButtons extends StatelessWidget {
                 Expanded(
                   child: Text(
                     success
-                        ? '¡Reserva creada! Te notificaremos'
-                        : 'Ya tienes una reserva activa de este libro',
+                        ? '¡Te uniste a la lista de espera! Te notificaremos cuando esté disponible'
+                        : 'Ya estás en la lista de espera de este libro',
                   ),
                 ),
               ],

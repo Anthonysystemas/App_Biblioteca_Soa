@@ -1,4 +1,3 @@
-// Archivo: screens/notifications_screen.dart
 import 'package:flutter/material.dart';
 import '../services/in_app_notification_service.dart';
 
@@ -262,7 +261,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Icono
               Container(
                 width: 40,
                 height: 40,
@@ -274,7 +272,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               ),
               const SizedBox(width: 12),
               
-              // Contenido
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

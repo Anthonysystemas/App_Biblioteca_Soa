@@ -4,7 +4,6 @@ import 'common/book_image.dart';
 import 'book/book_detail_modal.dart';
 import 'book/quick_action_buttons.dart';
 
-/// Widget de tarjeta de libro refactorizado y optimizado
 class BookCard extends StatelessWidget {
   final BookModel? book;
   final String? title;
@@ -90,7 +89,6 @@ class BookCard extends StatelessWidget {
               flex: isSmallScreen ? 6 : 7,
               child: Stack(
                 children: [
-                  // Imagen del libro usando widget reutilizable
                   Container(
                     width: double.infinity,
                     height: double.infinity,
@@ -114,7 +112,6 @@ class BookCard extends StatelessWidget {
               ),
             ),
 
-            // Información del libro
             Expanded(
               flex: isSmallScreen ? 4 : 4,
               child: Padding(
@@ -124,7 +121,6 @@ class BookCard extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Título y autor
                     Expanded(
                       flex: 1,
                       child: Column(
@@ -178,7 +174,6 @@ class BookCard extends StatelessWidget {
                       ),
                     ),
                     
-                    // Botones de acción rápida
                     if (showQuickActions && book != null) ...[
                       const SizedBox(height: 6),
                       QuickActionButtons(

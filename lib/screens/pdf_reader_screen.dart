@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
-/// Pantalla de lectura de PDF mejorada
 class PdfReaderScreen extends StatefulWidget {
   final String filePath;
   final String bookTitle;
@@ -170,7 +169,6 @@ class _PdfReaderScreenState extends State<PdfReaderScreen> {
   }
 
   Widget _buildPdfViewer() {
-    // Si es un archivo de demostración, usar asset o URL
     if (widget.filePath == 'sample') {
       return Center(
         child: Padding(
@@ -224,7 +222,6 @@ class _PdfReaderScreenState extends State<PdfReaderScreen> {
       );
     }
 
-    // Leer archivo desde ruta local
     return SfPdfViewer.file(
       File(widget.filePath),
       key: _pdfViewerKey,

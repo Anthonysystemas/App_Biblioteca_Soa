@@ -15,53 +15,51 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _dniController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _universidadController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFE3F2FD), // Fondo azul claro
+      backgroundColor: const Color(0xFFE3F2FD),
       body: CustomPaint(
         painter: RegisterBackgroundPainter(),
         child: SafeArea(
           child: SingleChildScrollView(
-            child: SizedBox(
-              height: MediaQuery.of(context).size.height - 
-                     MediaQuery.of(context).padding.top,
-              child: Column(
-                children: [
-                  // Header con botón back
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    alignment: Alignment.centerLeft,
-                    child: IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(
-                        Icons.arrow_back_ios,
-                        color: Colors.white,
-                        size: 24,
-                      ),
+            padding: const EdgeInsets.only(bottom: 30),
+            child: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  alignment: Alignment.centerLeft,
+                  child: IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(
+                      Icons.arrow_back_ios,
+                      color: Colors.white,
+                      size: 24,
                     ),
                   ),
+                ),
 
-                  // Título "Crear Cuenta"
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 40),
-                    alignment: Alignment.centerLeft,
-                    child: const Text(
-                      'Crear\nCuenta',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 36,
-                        fontWeight: FontWeight.bold,
-                        height: 1.2,
-                      ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 40),
+                  alignment: Alignment.centerLeft,
+                  child: const Text(
+                    'Crear\nCuenta',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 36,
+                      fontWeight: FontWeight.bold,
+                      height: 1.2,
                     ),
                   ),
+                ),
 
-                  const Spacer(),
+                const SizedBox(height: 40),
 
-                  // Formulario
-                  Container(
+                Container(
                     margin: const EdgeInsets.symmetric(horizontal: 30),
                     padding: const EdgeInsets.all(30),
                     decoration: BoxDecoration(
@@ -78,24 +76,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Label Nombre
                         const Text(
                           'Nombre Completo',
                           style: TextStyle(
-                            color: Color(0xFF1976D2), // Azul vibrante
+                            color: Color(0xFF1976D2),
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                         const SizedBox(height: 8),
                         
-                        // Campo Name
                         Container(
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: const Color(0xFFBBDEFB), // Borde azul claro
+                              color: const Color(0xFFBBDEFB),
                               width: 1.5,
                             ),
                           ),
@@ -108,7 +104,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 horizontal: 20,
                                 vertical: 16,
                               ),
-                              hintText: '',
+                              hintText: 'Ingresa tu nombre completo',
                               hintStyle: TextStyle(color: Colors.grey),
                             ),
                           ),
@@ -116,29 +112,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                         const SizedBox(height: 16),
 
-                        // Label Correo
                         const Text(
                           'Correo Electrónico',
                           style: TextStyle(
-                            color: Color(0xFF1976D2), // Azul vibrante
+                            color: Color(0xFF1976D2),
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                         const SizedBox(height: 8),
                         
-                        // Campo Email
                         Container(
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: const Color(0xFFBBDEFB), // Borde azul claro
+                              color: const Color(0xFFBBDEFB),
                               width: 1.5,
                             ),
                           ),
                           child: TextField(
                             controller: _emailController,
+                            keyboardType: TextInputType.emailAddress,
                             style: const TextStyle(fontSize: 16),
                             decoration: const InputDecoration(
                               border: InputBorder.none,
@@ -146,7 +141,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 horizontal: 20,
                                 vertical: 16,
                               ),
-                              hintText: '',
+                              hintText: 'correo@ejemplo.com',
                               hintStyle: TextStyle(color: Colors.grey),
                             ),
                           ),
@@ -154,24 +149,132 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                         const SizedBox(height: 16),
 
-                        // Label Contraseña
                         const Text(
-                          'Contraseña',
+                          'DNI o Carnet',
                           style: TextStyle(
-                            color: Color(0xFF1976D2), // Azul vibrante
+                            color: Color(0xFF1976D2),
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                         const SizedBox(height: 8),
                         
-                        // Campo Password
                         Container(
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: const Color(0xFFBBDEFB), // Borde azul claro
+                              color: const Color(0xFFBBDEFB),
+                              width: 1.5,
+                            ),
+                          ),
+                          child: TextField(
+                            controller: _dniController,
+                            keyboardType: TextInputType.number,
+                            style: const TextStyle(fontSize: 16),
+                            decoration: const InputDecoration(
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 16,
+                              ),
+                              hintText: 'Ingresa tu DNI o carnet',
+                              hintStyle: TextStyle(color: Colors.grey),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        const Text(
+                          'Número Celular',
+                          style: TextStyle(
+                            color: Color(0xFF1976D2),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: const Color(0xFFBBDEFB),
+                              width: 1.5,
+                            ),
+                          ),
+                          child: TextField(
+                            controller: _phoneController,
+                            keyboardType: TextInputType.phone,
+                            style: const TextStyle(fontSize: 16),
+                            decoration: const InputDecoration(
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 16,
+                              ),
+                              hintText: 'Ingresa tu número celular',
+                              hintStyle: TextStyle(color: Colors.grey),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        const Text(
+                          'Universidad',
+                          style: TextStyle(
+                            color: Color(0xFF1976D2),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: const Color(0xFFBBDEFB),
+                              width: 1.5,
+                            ),
+                          ),
+                          child: TextField(
+                            controller: _universidadController,
+                            style: const TextStyle(fontSize: 16),
+                            decoration: const InputDecoration(
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 16,
+                              ),
+                              hintText: 'Ingresa tu universidad',
+                              hintStyle: TextStyle(color: Colors.grey),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        const Text(
+                          'Contraseña',
+                          style: TextStyle(
+                            color: Color(0xFF1976D2),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: const Color(0xFFBBDEFB),
                               width: 1.5,
                             ),
                           ),
@@ -185,7 +288,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 horizontal: 20,
                                 vertical: 16,
                               ),
-                              hintText: '',
+                              hintText: 'Crea una contraseña segura',
                               hintStyle: TextStyle(color: Colors.grey),
                             ),
                           ),
@@ -193,24 +296,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                         const SizedBox(height: 30),
 
-                        // Botón Sign up
                         SizedBox(
                           width: double.infinity,
                           height: 56,
                           child: ElevatedButton(
                             onPressed: () async {
-                              // Guardar usuario
                               final user = User(
                                 id: DateTime.now().millisecondsSinceEpoch.toString(),
                                 name: _nameController.text.trim(),
                                 email: _emailController.text.trim(),
+                                carnetNumber: _dniController.text.trim(),
+                                phone: _phoneController.text.trim(),
+                                universidad: _universidadController.text.trim(),
                               );
                               
                               final navigator = Navigator.of(context);
                               
                               await UserService.saveUser(user);
                               
-                              // Navegar al HomeScreen después del registro
                               if (!mounted) return;
                               navigator.pushReplacement(
                                 MaterialPageRoute(
@@ -219,7 +322,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               );
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF1976D2), // Azul vibrante
+                              backgroundColor: const Color(0xFF1976D2),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
                               ),
@@ -239,7 +342,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                         const SizedBox(height: 20),
 
-                        // Link Sign in
                         Center(
                           child: GestureDetector(
                             onTap: () {
@@ -248,7 +350,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             child: const Text(
                               'Ya tengo cuenta',
                               style: TextStyle(
-                                color: Color(0xFF1976D2), // Azul vibrante
+                                color: Color(0xFF1976D2),
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
                                 decoration: TextDecoration.underline,
@@ -260,12 +362,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ],
                     ),
                   ),
-
-                  const SizedBox(height: 50),
                 ],
               ),
             ),
-          ),
         ),
       ),
     );

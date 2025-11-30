@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 
-/// Configuración de categorías con términos de búsqueda precisos
+
 class CategoryConfig {
   final String id;
   final String displayName;
   final IconData icon;
   final Color color;
   final List<String> searchTerms;
-  final List<String> subjects; // Subjects específicos de Open Library
-  final List<String> excludeKeywords; // Palabras clave para excluir libros no relacionados
+  final List<String> subjects;
+  final List<String> excludeKeywords;
 
   const CategoryConfig({
     required this.id,
@@ -21,7 +21,7 @@ class CategoryConfig {
   });
 }
 
-/// Categorías disponibles en la aplicación
+
 class CategoriesConfig {
   static const List<CategoryConfig> categories = [
     CategoryConfig(
@@ -260,7 +260,7 @@ class CategoriesConfig {
     ),
   ];
 
-  /// Obtener categoría por ID
+
   static CategoryConfig? getCategoryById(String id) {
     try {
       return categories.firstWhere((cat) => cat.id == id);
@@ -269,7 +269,7 @@ class CategoriesConfig {
     }
   }
 
-  /// Obtener categoría por nombre de display
+
   static CategoryConfig? getCategoryByDisplayName(String displayName) {
     try {
       return categories.firstWhere((cat) => cat.displayName == displayName);

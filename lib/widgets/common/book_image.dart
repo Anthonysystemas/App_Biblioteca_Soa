@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// Widget reutilizable para mostrar la imagen de un libro con placeholder y loading
 class BookImage extends StatelessWidget {
   final String? imageUrl;
   final Color backgroundColor;

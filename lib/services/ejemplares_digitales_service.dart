@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Modelo de disponibilidad de ejemplares digitales
 class DisponibilidadDigital {
   final String libroId;
   final int ejemplaresTotales;
@@ -41,16 +40,12 @@ class DisponibilidadDigital {
   }
 }
 
-/// Servicio para gestionar ejemplares digitales de libros
-/// Fórmula: disponibles = ejemplares totales - ejemplares en uso
 class EjemplaresDigitalesService {
   static const String _ejemplaresKey = 'ejemplares_digitales';
   static const String _prestamosDigitalesKey = 'prestamos_digitales_activos';
   static const String _listaEsperaKey = 'lista_espera_digital';
   static const String _notificacionesKey = 'notificaciones_disponibilidad';
 
-  /// Inicializar ejemplares para un libro si no existen
-  /// Genera un número aleatorio entre 1 y 10
   static Future<void> _inicializarEjemplares(String libroId) async {
     final prefs = await SharedPreferences.getInstance();
     final ejemplaresJson = prefs.getString(_ejemplaresKey);
@@ -60,23 +55,35 @@ class EjemplaresDigitalesService {
       ejemplares = json.decode(ejemplaresJson);
     }
 
-    // Si el libro no tiene ejemplares asignados, generarlos
     if (!ejemplares.containsKey(libroId)) {
       final random = Random();
-      final totales = random.nextInt(10) + 1; // Entre 1 y 10 ejemplares
+      final hash = libroId.hashCode.abs();
+      final modulo = hash % 20;
+      
+      int totales;
+      int enUso;
+      
+      if (modulo < 6) {
+        totales = 2 + (modulo % 4);
+        enUso = totales;
+      } else if (modulo < 10) {
+        totales = 1 + (modulo % 3);
+        enUso = totales > 1 ? totales - 1 : 0;
+      } else {
+        totales = 3 + (modulo % 8);
+        enUso = random.nextInt(totales ~/ 2);
+      }
 
       ejemplares[libroId] = {
         'totales': totales,
-        'enUso': 0,
+        'enUso': enUso,
       };
 
       await prefs.setString(_ejemplaresKey, json.encode(ejemplares));
-      debugPrint('📚 Ejemplares digitales generados para $libroId: $totales');
+      debugPrint('📚 Ejemplares digitales generados para $libroId: $totales totales, $enUso en uso');
     }
   }
 
-  /// Consultar disponibilidad de un libro
-  /// Aplica la fórmula: disponibles = totales - en uso
   static Future<DisponibilidadDigital> consultarDisponibilidad(String libroId) async {
     await _inicializarEjemplares(libroId);
 
@@ -112,7 +119,6 @@ class EjemplaresDigitalesService {
     );
   }
 
-  /// Incrementar ejemplares en uso (cuando se presta un libro)
   static Future<bool> prestarEjemplar(String libroId) async {
     try {
       final disponibilidad = await consultarDisponibilidad(libroId);
@@ -144,7 +150,6 @@ class EjemplaresDigitalesService {
     }
   }
 
-  /// Decrementar ejemplares en uso (cuando se devuelve un libro)
   static Future<bool> devolverEjemplar(String libroId) async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -161,7 +166,6 @@ class EjemplaresDigitalesService {
 
         debugPrint('📉 Ejemplar devuelto de $libroId. En uso: ${ejemplares[libroId]['enUso']}');
 
-        // Notificar al siguiente en la lista de espera
         await notificarSiguienteEnLista(libroId);
 
         return true;
@@ -174,7 +178,6 @@ class EjemplaresDigitalesService {
     }
   }
 
-  /// Verificar si el usuario tiene un préstamo activo de este libro
   static Future<bool> tienePrestamoActivo(String libroId) async {
     final prefs = await SharedPreferences.getInstance();
     final prestamosJson = prefs.getString(_prestamosDigitalesKey);
@@ -185,7 +188,6 @@ class EjemplaresDigitalesService {
     return prestamos.any((p) => p['libroId'] == libroId && p['activo'] == true);
   }
 
-  /// Registrar préstamo digital activo
   static Future<void> registrarPrestamoActivo(String libroId, String prestamoId) async {
     final prefs = await SharedPreferences.getInstance();
     final prestamosJson = prefs.getString(_prestamosDigitalesKey);
@@ -205,7 +207,6 @@ class EjemplaresDigitalesService {
     await prefs.setString(_prestamosDigitalesKey, json.encode(prestamos));
   }
 
-  /// Marcar préstamo como inactivo
   static Future<void> finalizarPrestamo(String prestamoId) async {
     final prefs = await SharedPreferences.getInstance();
     final prestamosJson = prefs.getString(_prestamosDigitalesKey);
@@ -223,7 +224,6 @@ class EjemplaresDigitalesService {
     await prefs.setString(_prestamosDigitalesKey, json.encode(prestamos));
   }
 
-  /// Obtener estadísticas de ejemplares
   static Future<Map<String, dynamic>> getEstadisticas() async {
     final prefs = await SharedPreferences.getInstance();
     final ejemplaresJson = prefs.getString(_ejemplaresKey);
@@ -255,15 +255,12 @@ class EjemplaresDigitalesService {
     };
   }
 
-  // ========== LISTA DE ESPERA ==========
 
-  /// Obtener ID único del usuario (simulado para esta demo)
   static Future<String> _getUserId() async {
     final prefs = await SharedPreferences.getInstance();
     String? userId = prefs.getString('user_id');
 
     if (userId == null) {
-      // Generar ID único para este dispositivo
       userId = 'user_${DateTime.now().millisecondsSinceEpoch}';
       await prefs.setString('user_id', userId);
     }
@@ -271,7 +268,6 @@ class EjemplaresDigitalesService {
     return userId;
   }
 
-  /// Unirse a la lista de espera de un libro
   static Future<bool> unirseAListaEspera(String libroId, {String? titulo, String? autor}) async {
     try {
       final userId = await _getUserId();
@@ -283,21 +279,18 @@ class EjemplaresDigitalesService {
         listas = json.decode(listaJson);
       }
 
-      // Inicializar lista para este libro si no existe
       if (!listas.containsKey(libroId)) {
         listas[libroId] = [];
       }
 
       final lista = listas[libroId] as List;
 
-      // Verificar si ya está en la lista
       final yaEnLista = lista.any((item) => item['userId'] == userId);
       if (yaEnLista) {
         debugPrint('⚠️ Usuario ya está en la lista de espera de $libroId');
         return false;
       }
 
-      // Agregar usuario a la lista
       lista.add({
         'userId': userId,
         'libroId': libroId,
@@ -317,7 +310,6 @@ class EjemplaresDigitalesService {
     }
   }
 
-  /// Salir de la lista de espera
   static Future<bool> salirDeListaEspera(String libroId) async {
     try {
       final userId = await _getUserId();
@@ -344,7 +336,6 @@ class EjemplaresDigitalesService {
     }
   }
 
-  /// Verificar si el usuario está en la lista de espera
   static Future<bool> estaEnListaEspera(String libroId) async {
     try {
       final userId = await _getUserId();
@@ -365,7 +356,6 @@ class EjemplaresDigitalesService {
     }
   }
 
-  /// Obtener posición en la lista de espera (1-indexed)
   static Future<int?> obtenerPosicionEnLista(String libroId) async {
     try {
       final userId = await _getUserId();
@@ -388,7 +378,6 @@ class EjemplaresDigitalesService {
     }
   }
 
-  /// Obtener cantidad total en lista de espera
   static Future<int> obtenerCantidadEnEspera(String libroId) async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -408,7 +397,47 @@ class EjemplaresDigitalesService {
     }
   }
 
-  /// Notificar al siguiente usuario en la lista de espera
+  static Future<List<Map<String, dynamic>>> obtenerListaEsperaUsuario() async {
+    try {
+      final userId = await _getUserId();
+      final prefs = await SharedPreferences.getInstance();
+      final listaJson = prefs.getString(_listaEsperaKey);
+
+      if (listaJson == null) return [];
+
+      Map<String, dynamic> listas = json.decode(listaJson);
+      List<Map<String, dynamic>> librosEnEspera = [];
+
+      listas.forEach((libroId, lista) {
+        if (lista is List) {
+          final index = lista.indexWhere((item) => item['userId'] == userId);
+          if (index != -1) {
+            final item = lista[index] as Map<String, dynamic>;
+            librosEnEspera.add({
+              'libroId': libroId,
+              'titulo': item['titulo'] ?? 'Sin título',
+              'autor': item['autor'] ?? 'Autor desconocido',
+              'fechaUnion': item['fechaUnion'] ?? DateTime.now().toIso8601String(),
+              'posicion': index + 1,
+              'totalEnEspera': lista.length,
+            });
+          }
+        }
+      });
+
+      librosEnEspera.sort((a, b) {
+        final fechaA = DateTime.parse(a['fechaUnion']);
+        final fechaB = DateTime.parse(b['fechaUnion']);
+        return fechaB.compareTo(fechaA);
+      });
+
+      return librosEnEspera;
+    } catch (e) {
+      debugPrint('Error al obtener lista de espera del usuario: $e');
+      return [];
+    }
+  }
+
   static Future<void> notificarSiguienteEnLista(String libroId) async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -427,11 +456,9 @@ class EjemplaresDigitalesService {
         return;
       }
 
-      // Obtener el primer usuario
       final siguienteUsuario = lista[0];
       final siguienteUserId = siguienteUsuario['userId'];
 
-      // Crear notificación
       final notificacionesJson = prefs.getString(_notificacionesKey);
       List<dynamic> notificaciones = [];
       if (notificacionesJson != null) {
@@ -452,7 +479,6 @@ class EjemplaresDigitalesService {
 
       await prefs.setString(_notificacionesKey, json.encode(notificaciones));
 
-      // Remover usuario de la lista de espera
       lista.removeAt(0);
       listas[libroId] = lista;
       await prefs.setString(_listaEsperaKey, json.encode(listas));
@@ -463,7 +489,6 @@ class EjemplaresDigitalesService {
     }
   }
 
-  /// Obtener notificaciones pendientes del usuario
   static Future<List<Map<String, dynamic>>> obtenerNotificaciones() async {
     try {
       final userId = await _getUserId();
@@ -474,13 +499,11 @@ class EjemplaresDigitalesService {
 
       List<dynamic> todasNotificaciones = json.decode(notificacionesJson);
 
-      // Filtrar notificaciones del usuario
       final misNotificaciones = todasNotificaciones
           .where((n) => n['userId'] == userId)
           .map((n) => n as Map<String, dynamic>)
           .toList();
 
-      // Ordenar por fecha (más recientes primero)
       misNotificaciones.sort((a, b) {
         final fechaA = DateTime.parse(a['fechaNotificacion']);
         final fechaB = DateTime.parse(b['fechaNotificacion']);
@@ -494,7 +517,6 @@ class EjemplaresDigitalesService {
     }
   }
 
-  /// Marcar notificación como leída
   static Future<void> marcarNotificacionComoLeida(String notifId) async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -516,7 +538,6 @@ class EjemplaresDigitalesService {
     }
   }
 
-  /// Limpiar datos (solo desarrollo)
   static Future<void> clearAll() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_ejemplaresKey);
@@ -526,7 +547,6 @@ class EjemplaresDigitalesService {
     debugPrint('🗑️ Ejemplares digitales y listas de espera limpiados');
   }
 
-  /// Resetear ejemplares de un libro específico
   static Future<void> resetLibro(String libroId) async {
     final prefs = await SharedPreferences.getInstance();
     final ejemplaresJson = prefs.getString(_ejemplaresKey);

@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 
-// Login Background (Naranja-Gris + Azul)
 class LoginBackgroundPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()..style = PaintingStyle.fill;
     
-    // Forma principal naranja-gris
     final path = Path();
     path.moveTo(0, 0);
     path.lineTo(size.width, 0);
@@ -23,8 +21,8 @@ class LoginBackgroundPainter extends CustomPainter {
     
     paint.shader = LinearGradient(
       colors: [
-        const Color(0xFFFF8C42), // Naranja
-        const Color(0xFF4A5568), // Gris
+        const Color(0xFFFF8C42),
+        const Color(0xFF4A5568),
       ],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
@@ -32,7 +30,6 @@ class LoginBackgroundPainter extends CustomPainter {
     
     canvas.drawPath(path, paint);
     
-    // Forma azul lateral derecha
     final bluePath = Path();
     bluePath.moveTo(size.width, size.height * 0.3);
     bluePath.lineTo(size.width, size.height);
@@ -45,8 +42,8 @@ class LoginBackgroundPainter extends CustomPainter {
     
     paint.shader = LinearGradient(
       colors: [
-        const Color(0xFF63B3ED), // Azul claro
-        const Color(0xFF4299E1), // Azul
+        const Color(0xFF63B3ED),
+        const Color(0xFF4299E1),
       ],
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
@@ -59,13 +56,11 @@ class LoginBackgroundPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-// Register Background (Ocean Blue)
 class RegisterBackgroundPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()..style = PaintingStyle.fill;
     
-    // Forma principal azul
     final path = Path();
     path.moveTo(0, 0);
     path.lineTo(size.width, 0);
@@ -82,8 +77,8 @@ class RegisterBackgroundPainter extends CustomPainter {
     
     paint.shader = LinearGradient(
       colors: [
-        const Color(0xFF0D47A1), // Azul marino oscuro
-        const Color(0xFF1976D2), // Azul vibrante
+        const Color(0xFF0D47A1),
+        const Color(0xFF1976D2),
       ],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
@@ -91,7 +86,6 @@ class RegisterBackgroundPainter extends CustomPainter {
     
     canvas.drawPath(path, paint);
     
-    // Forma azul inferior
     final secondaryPath = Path();
     secondaryPath.moveTo(size.width * 0.3, size.height * 0.4);
     secondaryPath.lineTo(size.width, size.height * 0.2);
@@ -105,8 +99,8 @@ class RegisterBackgroundPainter extends CustomPainter {
     
     paint.shader = LinearGradient(
       colors: [
-        const Color(0xFF2196F3), // Azul claro
-        const Color(0xFF64B5F6), // Azul muy claro
+        const Color(0xFF2196F3),
+        const Color(0xFF64B5F6),
       ],
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,

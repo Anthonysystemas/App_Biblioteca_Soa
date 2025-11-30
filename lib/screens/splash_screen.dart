@@ -30,25 +30,21 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   void _initAnimations() {
-    // Controller para el ícono (2 segundos)
     _iconController = AnimationController(
       duration: const Duration(milliseconds: 2000),
       vsync: this,
     );
 
-    // Controller para el texto (1.5 segundos, empezar después de 0.5s)
     _textController = AnimationController(
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
 
-    // Controller para el background (4 segundos total)
     _backgroundController = AnimationController(
       duration: const Duration(milliseconds: 4000),
       vsync: this,
     );
 
-    // Animación del ícono - escala con bounce
     _iconScaleAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
@@ -57,7 +53,6 @@ class _SplashScreenState extends State<SplashScreen>
       curve: Curves.elasticOut,
     ));
 
-    // Animación del ícono - rotación sutil
     _iconRotationAnimation = Tween<double>(
       begin: 0.0,
       end: 0.1,
@@ -66,7 +61,6 @@ class _SplashScreenState extends State<SplashScreen>
       curve: Curves.easeInOut,
     ));
 
-    // Animación del texto - opacidad
     _textOpacityAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
@@ -75,7 +69,6 @@ class _SplashScreenState extends State<SplashScreen>
       curve: Curves.easeIn,
     ));
 
-    // Animación del texto - deslizamiento desde abajo
     _textSlideAnimation = Tween<double>(
       begin: 50.0,
       end: 0.0,
@@ -84,7 +77,6 @@ class _SplashScreenState extends State<SplashScreen>
       curve: Curves.easeOutBack,
     ));
 
-    // Animación del background - cambio de color gradual
     _backgroundColorAnimation = ColorTween(
       begin: const Color(0xFF667EEA),
       end: const Color(0xFF764BA2),
@@ -93,7 +85,6 @@ class _SplashScreenState extends State<SplashScreen>
       curve: Curves.easeInOut,
     ));
 
-    // Animación de loading - rotación continua al final
     _loadingAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
@@ -104,15 +95,12 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   void _startAnimations() {
-    // Iniciar animación del background inmediatamente
     _backgroundController.forward();
     
-    // Iniciar animación del ícono después de 200ms
     Future.delayed(const Duration(milliseconds: 200), () {
       if (mounted) _iconController.forward();
     });
     
-    // Iniciar animación del texto después de 800ms
     Future.delayed(const Duration(milliseconds: 800), () {
       if (mounted) _textController.forward();
     });
@@ -190,7 +178,6 @@ class _SplashScreenState extends State<SplashScreen>
                     children: [
                       SizedBox(height: screenHeight * 0.1),
                       
-                      // Logo/Ícono principal con animaciones
                       AnimatedBuilder(
                         animation: _iconController,
                         builder: (context, child) {
@@ -225,7 +212,6 @@ class _SplashScreenState extends State<SplashScreen>
 
                       SizedBox(height: screenHeight * 0.05),
 
-                      // Texto principal con animaciones
                       AnimatedBuilder(
                         animation: _textController,
                         builder: (context, child) {
@@ -263,7 +249,6 @@ class _SplashScreenState extends State<SplashScreen>
 
                       SizedBox(height: screenHeight * 0.1),
 
-                      // Indicador de carga con animación
                       AnimatedBuilder(
                         animation: _backgroundController,
                         builder: (context, child) {

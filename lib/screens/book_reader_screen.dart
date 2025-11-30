@@ -1,4 +1,3 @@
-// Archivo: screens/book_reader_screen.dart
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -30,25 +29,19 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
   }
 
   void _checkWebViewSupport() {
-    // Inicializar WebView para todas las plataformas
-    // La vista alternativa solo se muestra si WebView falla
     _initializeWebView();
   }
 
   void _initializeWebView() {
     try {
-      // Usar previewLink de Google Books API
       String previewUrl;
       
       if (widget.book.previewLink != null && widget.book.previewLink!.isNotEmpty) {
-        // Usar el link de vista previa de Google Books
         previewUrl = widget.book.previewLink!;
       } else if (widget.book.infoLink != null && widget.book.infoLink!.isNotEmpty) {
-        // Usar el link de información como alternativa
         previewUrl = widget.book.infoLink!;
       } else {
-        // Construir URL de Google Books con el ID
-        previewUrl = 'https://books.google.com/books?id=${widget.book.id}&printsec=frontcover';
+        previewUrl = 'https:
       }
 
       _controller = WebViewController()
@@ -57,7 +50,6 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
         ..setNavigationDelegate(
           NavigationDelegate(
             onProgress: (int progress) {
-              // Opcional: mostrar progreso de carga
             },
             onPageStarted: (String url) {
               if (mounted) {
@@ -128,7 +120,6 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
   }
 
   Widget _buildBody() {
-    // Si es Windows, mostrar vista alternativa del libro
     if (!_isWebViewSupported) {
       return _buildAlternativeBookView();
     }
@@ -158,7 +149,6 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             const SizedBox(height: 20),
-            // Portada del libro
             Container(
               height: 300,
               width: 200,
@@ -187,7 +177,6 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
             ),
             const SizedBox(height: 24),
             
-            // Título
             Text(
               widget.book.title,
               style: const TextStyle(
@@ -199,7 +188,6 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
             ),
             const SizedBox(height: 8),
             
-            // Autor
             Text(
               widget.book.authorsString,
               style: TextStyle(
@@ -211,7 +199,6 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
             
             const SizedBox(height: 24),
             
-            // Información adicional
             _buildInfoRow(Icons.calendar_today, 'Publicado', widget.book.publishedDate ?? 'N/A'),
             _buildInfoRow(Icons.business, 'Editorial', widget.book.publisher ?? 'N/A'),
             _buildInfoRow(Icons.menu_book, 'Páginas', widget.book.pageCount?.toString() ?? 'N/A'),
@@ -220,21 +207,17 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
             
             const SizedBox(height: 24),
             
-            // Descripción con límite de caracteres
             if (widget.book.description != null && widget.book.description!.isNotEmpty) ...[
               _DescriptionCard(description: widget.book.description!),
               const SizedBox(height: 24),
             ],
             
-            // Botones de acción
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: () async {
-                  // Guardar context antes del async
                   final scaffoldMessenger = ScaffoldMessenger.of(context);
                   
-                  // Abrir directamente con url_launcher (funciona en todas las plataformas)
                   String previewUrl;
                   
                   if (widget.book.previewLink != null && widget.book.previewLink!.isNotEmpty) {
@@ -242,7 +225,7 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
                   } else if (widget.book.infoLink != null && widget.book.infoLink!.isNotEmpty) {
                     previewUrl = widget.book.infoLink!;
                   } else {
-                    previewUrl = 'https://books.google.com/books?id=${widget.book.id}&printsec=frontcover';
+                    previewUrl = 'https:
                   }
 
                   final uri = Uri.parse(previewUrl);
@@ -250,7 +233,7 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
                   if (await canLaunchUrl(uri)) {
                     await launchUrl(
                       uri,
-                      mode: LaunchMode.inAppWebView, // Intenta abrir en WebView dentro de la app
+                      mode: LaunchMode.inAppWebView,
                     );
                   } else {
                     scaffoldMessenger.showSnackBar(
@@ -437,7 +420,6 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Handle del modal
                   Center(
                     child: Container(
                       width: 40,
@@ -450,11 +432,9 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
                   ),
                   const SizedBox(height: 20),
                   
-                  // Información del libro
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Imagen del libro
                       Container(
                         width: 80,
                         height: 120,
@@ -497,7 +477,6 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
                       ),
                       const SizedBox(width: 16),
                       
-                      // Detalles
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -575,7 +554,7 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
 
   void _openInBrowser() async {
     final url = widget.book.previewLink ?? 
-        'https://openlibrary.org${widget.book.id}';
+        'https:
     
     final uri = Uri.parse(url);
     
@@ -605,7 +584,6 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
   }
 }
 
-// Widget para descripción expandible
 class _DescriptionCard extends StatefulWidget {
   final String description;
 
@@ -621,15 +599,14 @@ class _DescriptionCardState extends State<_DescriptionCard> {
 
   @override
   Widget build(BuildContext context) {
-    // Limpiar tags HTML de la descripción
     String cleanDescription = widget.description
-        .replaceAll(RegExp(r'<[^>]*>'), '') // Eliminar todas las tags HTML
-        .replaceAll('&nbsp;', ' ')           // Reemplazar espacios HTML
-        .replaceAll('&amp;', '&')            // Reemplazar &
-        .replaceAll('&lt;', '<')             // Reemplazar <
-        .replaceAll('&gt;', '>')             // Reemplazar >
-        .replaceAll('&quot;', '"')           // Reemplazar "
-        .trim();                             // Eliminar espacios al inicio/final
+        .replaceAll(RegExp(r'<[^>]*>'), '')
+        .replaceAll('&nbsp;', ' ')
+        .replaceAll('&amp;', '&')
+        .replaceAll('&lt;', '<')
+        .replaceAll('&gt;', '>')
+        .replaceAll('&quot;', '"')
+        .trim();
     
     final needsTruncation = cleanDescription.length > _maxChars;
     final displayText = _isExpanded || !needsTruncation
@@ -703,7 +680,6 @@ class _DescriptionCardState extends State<_DescriptionCard> {
   }
 }
 
-// Pantalla dedicada solo para WebView
 class _WebViewOnlyScreen extends StatefulWidget {
   final BookModel book;
 
@@ -731,7 +707,7 @@ class _WebViewOnlyScreenState extends State<_WebViewOnlyScreen> {
     } else if (widget.book.infoLink != null && widget.book.infoLink!.isNotEmpty) {
       previewUrl = widget.book.infoLink!;
     } else {
-      previewUrl = 'https://books.google.com/books?id=${widget.book.id}&printsec=frontcover';
+      previewUrl = 'https:
     }
 
     _controller = WebViewController()

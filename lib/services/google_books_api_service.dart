@@ -5,7 +5,7 @@ import '../models/book_model.dart';
 
 
 class GoogleBooksApiService {
-  static const String _baseUrl = 'https://www.googleapis.com/books/v1';
+  static const String _baseUrl = 'https:
 
 
 
@@ -80,7 +80,6 @@ class GoogleBooksApiService {
     int maxResults = 20,
   }) async {
     try {
-      // Buscar libros populares usando términos generales
       final url = Uri.parse(
         '$_baseUrl/volumes?q=bestseller OR trending'
         '&maxResults=$maxResults'
@@ -110,7 +109,6 @@ class GoogleBooksApiService {
     }
   }
 
-  /// Obtener detalles de un libro específico por ID
   static Future<BookModel?> getBookById(String bookId) async {
     try {
       final url = Uri.parse('$_baseUrl/volumes/$bookId');
@@ -129,7 +127,6 @@ class GoogleBooksApiService {
     }
   }
 
-  /// Obtener libros por múltiples categorías
   static Future<List<BookModel>> getBooksByMultipleCategories({
     required List<String> categories,
     int maxResults = 30,

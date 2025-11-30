@@ -31,9 +31,8 @@ class CategoriesSection extends StatelessWidget {
         ),
         const SizedBox(height: 16),
 
-        // CORRECCIÓN: Contenedor con altura fija
         SizedBox(
-          height: 120, // Altura suficiente para círculo + texto en 2 líneas
+          height: 120,
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),

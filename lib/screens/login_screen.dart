@@ -1,4 +1,3 @@
-// screens/login_screen.dart
 import 'package:flutter/material.dart';
 import '../models/user.dart';
 import '../services/user_service.dart';
@@ -14,15 +13,13 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _usernameController = TextEditingController(); // Cambio: username en lugar de email
+  final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   
-  bool _isLoading = false; // Estado de carga
-  String? _errorMessage; // Mensaje de error
+  bool _isLoading = false;
+  String? _errorMessage;
 
-  // Método para manejar el login
   Future<void> _handleLogin() async {
-    // Validar campos vacíos
     if (_usernameController.text.trim().isEmpty || 
         _passwordController.text.trim().isEmpty) {
       setState(() {
@@ -36,10 +33,8 @@ class _LoginScreenState extends State<LoginScreen> {
       _errorMessage = null;
     });
 
-    // Simular un pequeño delay
     await Future.delayed(const Duration(milliseconds: 500));
 
-    // Crear usuario y guardar en local
     final user = User(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       name: _usernameController.text.trim(),
@@ -48,7 +43,6 @@ class _LoginScreenState extends State<LoginScreen> {
     
     await UserService.saveUser(user);
 
-    // Login simple - cualquier usuario y contraseña permite acceso
     if (mounted) {
       Navigator.pushReplacement(
         context,
@@ -80,8 +74,8 @@ class _LoginScreenState extends State<LoginScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFFE3F2FD), // Azul muy claro
-              Color(0xFFFFFFFF), // Blanco
+              Color(0xFFE3F2FD),
+              Color(0xFFFFFFFF),
             ],
           ),
         ),
@@ -92,29 +86,25 @@ class _LoginScreenState extends State<LoginScreen> {
                      MediaQuery.of(context).padding.top,
               child: Column(
                 children: [
-                  // Header con título
                   Container(
                     padding: const EdgeInsets.all(40),
                     alignment: Alignment.centerLeft,
                     child: const Text(
                       'Iniciar\nSesión',
                       style: TextStyle(
-                        color: Color(0xFF0D47A1), // Azul marino oscuro
+                        color: Color(0xFF0D47A1),
                         fontSize: 36,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
 
-                  // Espaciador
                   const Spacer(),
 
-                  // Formulario
                   Padding(
                     padding: const EdgeInsets.all(40),
                     child: Column(
                       children: [
-                        // Mostrar mensaje de error si existe
                         if (_errorMessage != null) ...[
                           Container(
                             width: double.infinity,
@@ -144,7 +134,6 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ],
 
-                        // Campo Username (cambio de Email a Username)
                         TextField(
                           controller: _usernameController,
                           enabled: !_isLoading,
@@ -171,7 +160,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                       ? 'Usuario requerido' : null,
                           ),
                           onChanged: (value) {
-                            // Limpiar error cuando el usuario empiece a escribir
                             if (_errorMessage != null) {
                               setState(() {
                                 _errorMessage = null;
@@ -181,7 +169,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         const SizedBox(height: 20),
 
-                        // Campo Password
                         TextField(
                           controller: _passwordController,
                           enabled: !_isLoading,
@@ -209,7 +196,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                       ? 'Contraseña requerida' : null,
                           ),
                           onChanged: (value) {
-                            // Limpiar error cuando el usuario empiece a escribir
                             if (_errorMessage != null) {
                               setState(() {
                                 _errorMessage = null;
@@ -217,7 +203,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             }
                           },
                           onSubmitted: (value) {
-                            // Permitir login con Enter
                             if (!_isLoading) {
                               _handleLogin();
                             }
@@ -225,14 +210,13 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         const SizedBox(height: 30),
 
-                        // Botón Login con estado de carga
                         SizedBox(
                           width: double.infinity,
                           height: 50,
                           child: ElevatedButton(
                             onPressed: _isLoading ? null : _handleLogin,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF1976D2), // Azul vibrante
+                              backgroundColor: const Color(0xFF1976D2),
                               disabledBackgroundColor: Colors.grey.shade300,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
@@ -261,7 +245,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         const SizedBox(height: 16),
 
-                        // Botón Olvidé mi contraseña
                         Align(
                           alignment: Alignment.centerRight,
                           child: TextButton(
@@ -276,7 +259,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             child: const Text(
                               '¿Olvidaste tu contraseña?',
                               style: TextStyle(
-                                color: Color(0xFF2196F3), // Azul claro
+                                color: Color(0xFF2196F3),
                                 fontSize: 14,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -286,10 +269,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
                         const SizedBox(height: 8),
 
-                        // Botón Register
                         TextButton(
                           onPressed: _isLoading ? null : () {
-                            // Navegar al RegisterScreen
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -307,7 +288,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 TextSpan(
                                   text: "Regístrate",
                                   style: TextStyle(
-                                    color: _isLoading ? Colors.grey : const Color(0xFF1976D2), // Azul vibrante
+                                    color: _isLoading ? Colors.grey : const Color(0xFF1976D2),
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),

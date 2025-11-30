@@ -1,4 +1,3 @@
-// Archivo: widgets/notification_badge.dart
 import 'package:flutter/material.dart';
 import '../services/in_app_notification_service.dart';
 import '../screens/notifications_screen.dart';
@@ -17,7 +16,6 @@ class _NotificationBadgeState extends State<NotificationBadge> {
   void initState() {
     super.initState();
     _loadUnreadCount();
-    // Escuchar cambios en las notificaciones
     InAppNotificationService().addListener(_loadUnreadCount);
   }
 

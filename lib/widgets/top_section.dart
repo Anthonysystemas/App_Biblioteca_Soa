@@ -28,7 +28,6 @@ class _TopSectionState extends State<TopSection> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Recargar usuario cuando se regrese a esta pantalla
     _loadUser();
   }
 
@@ -51,7 +50,6 @@ class _TopSectionState extends State<TopSection> {
   }
 
   Future<void> _pickProfileImage() async {
-    // Navegar al perfil para cambiar la foto
     await Navigator.push(
       context,
       MaterialPageRoute(
@@ -59,7 +57,6 @@ class _TopSectionState extends State<TopSection> {
       ),
     );
     
-    // Recargar usuario después de regresar del perfil
     if (mounted) {
       _loadUser();
     }
@@ -73,7 +70,6 @@ class _TopSectionState extends State<TopSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Fila: Saludo a la izquierda y Avatar a la derecha
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -104,7 +100,6 @@ class _TopSectionState extends State<TopSection> {
               ),
             ),
             const SizedBox(width: 16),
-            // Avatar con foto de perfil o inicial
             GestureDetector(
               onTap: _pickProfileImage,
               child: Stack(
@@ -128,7 +123,6 @@ class _TopSectionState extends State<TopSection> {
                           )
                         : null,
                   ),
-                  // Indicador de edición
                   Positioned(
                     bottom: 0,
                     right: 0,
@@ -152,7 +146,6 @@ class _TopSectionState extends State<TopSection> {
           ],
         ),
         const SizedBox(height: 20),
-        // TARJETA DEL LIBRO DESTACADO - CORRECCIÓN COMPLETA
         Container(
           width: double.infinity,
           constraints: const BoxConstraints(
@@ -182,14 +175,12 @@ class _TopSectionState extends State<TopSection> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // SECCIÓN DE TEXTO - OPTIMIZADA
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Etiqueta
                       Text(
                         _lastViewedBook != null ? 'Continuar leyendo' : 'Libro destacado',
                         style: const TextStyle(
@@ -201,7 +192,6 @@ class _TopSectionState extends State<TopSection> {
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
-                      // Título del libro
                       Text(
                         _lastViewedBook?.title ?? 'Explora nuestra colección',
                         style: const TextStyle(
@@ -214,7 +204,6 @@ class _TopSectionState extends State<TopSection> {
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 12),
-                      // Botón
                       ElevatedButton(
                         onPressed: _lastViewedBook != null
                             ? () {
@@ -253,7 +242,6 @@ class _TopSectionState extends State<TopSection> {
                   ),
                 ),
                 const SizedBox(width: 16),
-                // ICONO DEL LIBRO - OPTIMIZADO
                 Container(
                   width: 70,
                   height: 90,

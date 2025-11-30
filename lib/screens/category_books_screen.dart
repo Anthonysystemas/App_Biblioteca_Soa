@@ -5,9 +5,8 @@ import '../widgets/book_card.dart';
 import '../widgets/bottom_nav.dart';
 import '../config/categories_config.dart';
 
-/// Pantalla para mostrar libros de una categoría específica
 class CategoryBooksScreen extends StatefulWidget {
-  final String categoryId; // Ahora usamos el ID de categoría
+  final String categoryId;
   final int currentNavIndex;
   final Function(int) onNavTap;
 
@@ -50,7 +49,6 @@ class _CategoryBooksScreenState extends State<CategoryBooksScreen> {
     }
 
     try {
-      // Usar Google Books API con múltiples categorías
       final books = await GoogleBooksApiService.getBooksByMultipleCategories(
         categories: _category!.subjects,
         maxResults: 30,
@@ -74,7 +72,6 @@ class _CategoryBooksScreenState extends State<CategoryBooksScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Si no hay categoría, usar valores por defecto
     final categoryName = _category?.displayName ?? 'Categoría';
     final categoryIcon = _category?.icon ?? Icons.book;
     final categoryColor = _category?.color ?? Colors.blue;

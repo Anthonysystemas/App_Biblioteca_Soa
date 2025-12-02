@@ -19,7 +19,7 @@ class ExpirationCheckerService {
       await _checkExpirations();
     });
     
-    debugPrint('⏱️ MODO PRODUCCIÓN: Verificación cada 24 horas iniciada');
+    debugPrint('⏱️ Verificación cada 24 horas iniciada');
   }
 
   Future<void> _checkExpirations() async {

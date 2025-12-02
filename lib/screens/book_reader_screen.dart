@@ -41,7 +41,7 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
       } else if (widget.book.infoLink != null && widget.book.infoLink!.isNotEmpty) {
         previewUrl = widget.book.infoLink!;
       } else {
-        previewUrl = 'https:
+        previewUrl = 'https://books.google.com/books?id=${widget.book.id}';
       }
 
       _controller = WebViewController()
@@ -225,7 +225,7 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
                   } else if (widget.book.infoLink != null && widget.book.infoLink!.isNotEmpty) {
                     previewUrl = widget.book.infoLink!;
                   } else {
-                    previewUrl = 'https:
+                    previewUrl = 'https://books.google.com/books?id=${widget.book.id}';
                   }
 
                   final uri = Uri.parse(previewUrl);
@@ -554,7 +554,7 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
 
   void _openInBrowser() async {
     final url = widget.book.previewLink ?? 
-        'https:
+        'https://books.google.com/books?id=${widget.book.id}';
     
     final uri = Uri.parse(url);
     
@@ -707,7 +707,7 @@ class _WebViewOnlyScreenState extends State<_WebViewOnlyScreen> {
     } else if (widget.book.infoLink != null && widget.book.infoLink!.isNotEmpty) {
       previewUrl = widget.book.infoLink!;
     } else {
-      previewUrl = 'https:
+      previewUrl = 'https://books.google.com/books?id=${widget.book.id}';
     }
 
     _controller = WebViewController()

@@ -209,7 +209,7 @@ class _ReportesScreenState extends State<ReportesScreen> {
     required Color color,
   }) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -223,24 +223,29 @@ class _ReportesScreenState extends State<ReportesScreen> {
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: color, size: 32),
-          const SizedBox(height: 8),
+          Icon(icon, color: color, size: 28),
+          const SizedBox(height: 6),
           Text(
             value,
             style: const TextStyle(
-              fontSize: 24,
+              fontSize: 22,
               fontWeight: FontWeight.bold,
               color: Color(0xFF1A202C),
             ),
           ),
+          const SizedBox(height: 2),
           Text(
             label,
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 11,
               color: Colors.grey[600],
+              height: 1.1,
             ),
             textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
@@ -356,30 +361,6 @@ class _ReportesScreenState extends State<ReportesScreen> {
             },
             icon: const Icon(Icons.picture_as_pdf),
             label: const Text('Exportar como PDF'),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: const Color(0xFF667EEA),
-              side: const BorderSide(color: Color(0xFF667EEA)),
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 12),
-        SizedBox(
-          width: double.infinity,
-          child: OutlinedButton.icon(
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Exportar CSV - Próximamente con backend'),
-                  backgroundColor: Colors.orange,
-                ),
-              );
-            },
-            icon: const Icon(Icons.table_chart),
-            label: const Text('Exportar como CSV'),
             style: OutlinedButton.styleFrom(
               foregroundColor: const Color(0xFF667EEA),
               side: const BorderSide(color: Color(0xFF667EEA)),

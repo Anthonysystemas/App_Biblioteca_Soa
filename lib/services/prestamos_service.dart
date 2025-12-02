@@ -67,7 +67,7 @@ class Prestamo {
 }
 
 class PrestamosService {
-  static const String baseUrl = 'https:
+  static const String baseUrl = 'https://api-biblioteca.example.com';
   static const String _prestamosKey = 'user_prestamos';
 
   static Future<List<Prestamo>> getPrestamosActivos() async {

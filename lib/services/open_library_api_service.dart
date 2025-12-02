@@ -5,8 +5,8 @@ import '../models/book_model.dart';
 import 'ejemplares_digitales_service.dart';
 
 class OpenLibraryApiService {
-  static const String _baseUrl = 'https:
-  static const String _coversBaseUrl = 'https:
+  static const String _baseUrl = 'https://openlibrary.org';
+  static const String _coversBaseUrl = 'https://covers.openlibrary.org';
 
   static Future<List<BookModel>> searchBooks({
     required String query,
@@ -386,8 +386,8 @@ class OpenLibraryApiService {
       language: doc['language'] != null && (doc['language'] as List).isNotEmpty
           ? doc['language'][0]
           : 'en',
-      previewLink: 'https:
-      infoLink: 'https:
+      previewLink: 'https://openlibrary.org${doc['key']}',
+      infoLink: 'https://openlibrary.org${doc['key']}'
     );
   }
 
@@ -425,8 +425,8 @@ class OpenLibraryApiService {
           : (work['description']?['value'] ?? 'Sin descripción disponible'),
       publishedDate: work['first_publish_date']?.toString(),
       categories: subjects,
-      previewLink: 'https:
-      infoLink: 'https:
+      previewLink: 'https://openlibrary.org${work['key']}',
+      infoLink: 'https://openlibrary.org${work['key']}'
     );
   }
 

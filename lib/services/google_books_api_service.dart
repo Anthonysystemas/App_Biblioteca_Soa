@@ -5,7 +5,7 @@ import '../models/book_model.dart';
 
 
 class GoogleBooksApiService {
-  static const String _baseUrl = 'https:
+  static const String _baseUrl = 'https://www.googleapis.com/books/v1';
 
 
 

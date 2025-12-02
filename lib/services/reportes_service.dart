@@ -3,7 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'prestamos_service.dart';
 
 class ReportesService {
-  static const String baseUrl = 'https:
+  static const String baseUrl = 'https://api-biblioteca.example.com';
 
 
   static Future<Map<String, dynamic>> getResumenUsuario() async {

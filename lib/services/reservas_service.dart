@@ -71,7 +71,7 @@ class Reserva {
 }
 
 class ReservasService {
-  static const String baseUrl = 'https:
+  static const String baseUrl = 'https://api-biblioteca.example.com';
   static const String _reservasKey = 'user_reservas';
 
   static Future<List<Reserva>> getReservasActivas() async {

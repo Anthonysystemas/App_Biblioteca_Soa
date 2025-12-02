@@ -928,7 +928,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required Color color,
   }) {
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -942,13 +942,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: color, size: 28),
-          const SizedBox(height: 6),
+          Icon(icon, color: color, size: 26),
+          const SizedBox(height: 4),
           Text(
             count,
             style: const TextStyle(
-              fontSize: 22,
+              fontSize: 20,
               fontWeight: FontWeight.bold,
               color: Color(0xFF1A202C),
             ),
@@ -957,9 +958,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Text(
             label,
             style: TextStyle(
-              fontSize: 11,
+              fontSize: 10,
               color: Colors.grey[600],
-              height: 1.2,
+              height: 1.1,
             ),
             textAlign: TextAlign.center,
             maxLines: 2,
